@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && npx pagefind --site dist",
+    "build:no-search": "astro build",
     "preview": "astro preview",
     "check": "astro check",
     "typecheck": "astro check",
@@ -15,8 +16,11 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.6",
+    "@astrojs/sitemap": "^3.7.2",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.3.7",
+    "pagefind": "^1.5.2",
+    "shiki": "^4.1.0",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {

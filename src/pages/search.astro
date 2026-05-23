@@ -1,0 +1,72 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="搜索">
+  <section class="not-prose">
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">搜索</h1>
+    <div class="mt-6">
+      <div class="relative">
+        <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="搜索所有知识…"
+          class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
+        />
+      </div>
+      <div id="search-results" class="mt-6"></div>
+    </div>
+  </section>
+
+  <script is:inline>
+    let pagefind = null;
+
+    async function getPagefind() {
+      if (pagefind) return pagefind;
+      try {
+        pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js');
+      } catch {
+        pagefind = { search: async () => ({ results: [] }) };
+      }
+      return pagefind;
+    }
+
+    const input = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+
+    let debounceTimer;
+    input?.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        const query = input.value.trim();
+        if (!query) { results.innerHTML = ''; return; }
+
+        const pf = await getPagefind();
+        const res = await pf.search(query);
+
+        if (!res.results?.length) {
+          results.innerHTML = '<p class="text-sm text-slate-500">未找到结果</p>';
+          return;
+        }
+
+        const items = await Promise.all(
+          res.results.slice(0, 20).map((r) => r.data())
+        );
+
+        results.innerHTML = items
+          .map(
+            (item) => `
+              <a href="${item.url}" class="block rounded-lg border border-slate-200 bg-white p-4 mb-3 no-underline transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 dark:hover:bg-slate-800">
+                <div class="text-sm font-medium text-slate-900 dark:text-slate-100">${item.meta?.title || item.url}</div>
+                ${item.excerpt ? `<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">${item.excerpt}</div>` : ''}
+              </a>
+            `
+          )
+          .join('');
+      }, 150);
+    });
+  </script>
+</Layout>

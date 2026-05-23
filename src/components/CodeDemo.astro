@@ -1,9 +1,20 @@
 ---
+import { codeToHtml } from 'shiki';
 import type { CodeDemoProps, SourceFile } from '../types';
 
 const { code, lang = 'html', files } = Astro.props as CodeDemoProps;
 
 const sources: SourceFile[] = files ?? [{ name: `demo.${lang}`, code: code ?? '' }];
+
+// Highlight each source file
+const highlighted = await Promise.all(
+  sources.map(async (f) => ({
+    ...f,
+    html: await codeToHtml(f.code, { lang: f.name.endsWith('.css') ? 'css' : lang, theme: 'github-dark' }).catch(
+      () => `<pre class="m-0 overflow-x-auto bg-slate-900 p-4 text-sm leading-relaxed text-slate-100 dark:bg-slate-950"><code>${f.code}</code></pre>`
+    ),
+  }))
+);
 ---
 
 <div class="not-prose my-6 overflow-hidden rounded-xl border shadow-sm border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50">
@@ -38,14 +49,14 @@ const sources: SourceFile[] = files ?? [{ name: `demo.${lang}`, code: code ?? ''
     </div>
     <div class="max-h-96 overflow-auto">
       {
-        sources.map((file) => (
+        highlighted.map((file) => (
           <details open>
-            {sources.length > 1 && (
+            {highlighted.length > 1 && (
               <summary class="cursor-pointer border-b px-4 py-1.5 font-mono text-xs select-none transition-colors border-slate-100 bg-slate-50/50 text-slate-500 hover:bg-slate-100/50 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400 dark:hover:bg-slate-700/50">
                 {file.name}
               </summary>
             )}
-            <pre class="m-0 overflow-x-auto bg-slate-900 p-4 text-sm leading-relaxed text-slate-100 dark:bg-slate-950"><code>{file.code}</code></pre>
+            <Fragment set:html={file.html} />
           </details>
         ))
       }
