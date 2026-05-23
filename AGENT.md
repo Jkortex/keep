@@ -217,6 +217,5 @@ pnpm format:check    # 格式化检查 (CI)
 ## Related Docs
 
 - `docs/HANDOVER.md` — 交接文档
-- `docs/ideas/knowledge-keep.md` — 原始方案文档
 - `.github/workflows/ci.yml` — CI/CD 流程
 - `src/content.config.ts` — 数据结构和 schema
