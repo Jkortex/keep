@@ -152,9 +152,9 @@ const isHome: boolean = Astro.url.pathname === '/';
     </header>
 
     <!-- Main -->
-    <main class="mx-auto w-full flex-1 px-6 py-10 md:py-14 {wide ? 'max-w-5xl' : 'max-w-3xl'}">
+    <main class:list={['mx-auto w-full flex-1 px-6 py-10 md:py-14', wide ? 'max-w-5xl' : 'max-w-3xl']}>
       {!isHome && <Breadcrumbs path={Astro.url} />}
-      <article class="prose {wide ? 'max-w-none' : ''}">
+      <article class:list={['prose', wide && 'max-w-none']}>
         <slot />
       </article>
     </main>

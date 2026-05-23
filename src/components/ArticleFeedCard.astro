@@ -50,7 +50,7 @@ const accentClass = accentColors[slug] ?? 'border-l-slate-400';
 <a
   href={href}
   data-category={slug}
-  class="feed-card group relative block border-l-2 {accentClass} rounded-lg bg-white px-4 py-3.5 no-underline shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:bg-slate-800/50 dark:hover:bg-slate-800 sm:px-5 sm:py-4"
+  class:list={['feed-card group relative block rounded-lg bg-white px-4 py-3.5 no-underline shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:bg-slate-800/50 dark:hover:bg-slate-800 sm:px-5 sm:py-4', 'border-l-2', accentClass]}
 >
   <div class="flex items-start gap-3">
     <div
