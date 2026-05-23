@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ── */
+@theme {
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+
+  --color-surface: #fafaf9;
+  --color-surface-card: #ffffff;
+  --color-border: #e7e5e4;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+
+  --font-sans: 'Inter', 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* ── Base ── */
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Prose styles for knowledge content ── */
+.prose {
+  max-width: 65ch;
+  line-height: 1.8;
+}
+
+.prose h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.prose h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 2.5rem 0 0.75rem;
+  letter-spacing: -0.01em;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.prose h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.prose p {
+  margin: 0.75rem 0;
+}
+
+.prose a {
+  color: var(--color-brand-600);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.prose a:hover {
+  color: var(--color-brand-700);
+  text-decoration: underline;
+}
+
+.prose code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: #f1f5f9;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: #be123c;
+}
+
+.prose pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin: 1.25rem 0;
+}
+
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.prose blockquote {
+  margin: 1.25rem 0;
+  padding: 0.75rem 1.25rem;
+  border-left: 4px solid var(--color-brand-400);
+  background: #f1f5f9;
+  border-radius: 0 10px 10px 0;
+  color: #475569;
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.9rem;
+}
+
+.prose th {
+  background: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.prose tr:nth-child(even) td {
+  background: #fafaf9;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.prose li {
+  margin: 0.3rem 0;
+}
+
+.prose hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}

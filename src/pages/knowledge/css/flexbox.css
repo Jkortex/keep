@@ -1,0 +1,25 @@
+.flexbox-demo-inline {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  width: 100%;
+  min-height: 140px;
+}
+
+.demo-item {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.demo-item:hover {
+  transform: translateY(-4px);
+}
