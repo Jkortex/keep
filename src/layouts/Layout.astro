@@ -17,43 +17,34 @@ const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{siteTitle}</title>
+
+    <!-- Prevent FOUC: set .dark before paint -->
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
-  <body class="min-h-screen flex flex-col">
+  <body class="min-h-screen flex flex-col transition-colors duration-200">
     <!-- Nav -->
-    <header class="sticky top-0 z-50 border-b border-slate-200 bg-[#F8FAFC]/80 backdrop-blur-md">
+    <header class="sticky top-0 z-50 border-b border-slate-200 bg-[#F8FAFC]/80 backdrop-blur-md dark:border-slate-700 dark:bg-[#0F172A]/80">
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         <a href="/" class="flex items-center gap-2.5 no-underline group">
-          <!-- Lucide BookOpen icon -->
-          <svg
-            class="h-5 w-5 text-slate-700 group-hover:text-blue-600 transition-colors"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24" height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <!-- BookOpen -->
+          <svg class="h-5 w-5 text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
           </svg>
-          <span class="text-base font-semibold tracking-tight text-slate-800">Keep</span>
+          <span class="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-100">Keep</span>
         </a>
-        <div class="flex items-center gap-5 text-sm">
-          <a href="/knowledge" class="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition-colors no-underline font-medium">
-            <!-- Lucide Library icon -->
-            <svg
-              class="h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24" height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+        <div class="flex items-center gap-4">
+          <a href="/knowledge" class="flex items-center gap-1.5 text-sm font-medium text-slate-500 no-underline transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400">
+            <!-- Library -->
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 6.9V2H8v4.9" />
               <path d="M14 2v4h-4" />
               <path d="M18 22h-2V8h2Z" />
@@ -65,6 +56,27 @@ const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
             </svg>
             所有知识
           </a>
+
+          <!-- Theme toggle -->
+          <button
+            class="theme-toggle"
+            id="theme-toggle"
+            aria-label="切换主题"
+            type="button"
+          >
+            <!-- Sun (shown in dark mode) -->
+            <svg id="sun-icon" class="hidden h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" /><path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" /><path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+            </svg>
+            <!-- Moon (shown in light mode) -->
+            <svg id="moon-icon" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          </button>
         </div>
       </nav>
     </header>
@@ -77,8 +89,40 @@ const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-700 dark:text-slate-500">
       <span>Knowledge Keep</span>
     </footer>
+
+    <!-- Theme toggle logic -->
+    <script is:inline>
+      const toggle = document.getElementById('theme-toggle');
+      const html = document.documentElement;
+      const sunIcon = document.getElementById('sun-icon');
+      const moonIcon = document.getElementById('moon-icon');
+
+      function setTheme(dark) {
+        if (dark) {
+          html.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+          sunIcon?.classList.remove('hidden');
+          moonIcon?.classList.add('hidden');
+        } else {
+          html.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+          sunIcon?.classList.add('hidden');
+          moonIcon?.classList.remove('hidden');
+        }
+      }
+
+      // Sync icons on load
+      if (html.classList.contains('dark')) {
+        sunIcon?.classList.remove('hidden');
+        moonIcon?.classList.add('hidden');
+      }
+
+      toggle?.addEventListener('click', () => {
+        setTheme(!html.classList.contains('dark'));
+      });
+    </script>
   </body>
 </html>

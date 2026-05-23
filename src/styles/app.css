@@ -1,13 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ── Class-based dark mode ── */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Design Tokens (Minimalism & Swiss Style) ── */
 @theme {
+  /* Light mode tokens (default) */
   --color-primary: #475569;
   --color-on-primary: #FFFFFF;
   --color-secondary: #64748B;
   --color-accent: #2563EB;
   --color-accent-hover: #1D4ED8;
+  --color-accent-light: #EFF6FF;
   --color-background: #F8FAFC;
   --color-foreground: #1E293B;
   --color-muted: #EAEFF3;
@@ -38,10 +43,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Prose styles for knowledge content ── */
+/* ── Prose styles (Light) ── */
 .prose {
   max-width: 65ch;
   line-height: 1.8;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  color: var(--color-foreground);
 }
 
 .prose h1 {
@@ -49,7 +60,6 @@ body {
   font-weight: 700;
   margin: 0 0 0.25rem;
   letter-spacing: -0.02em;
-  color: var(--color-foreground);
 }
 
 .prose h2 {
@@ -59,14 +69,12 @@ body {
   letter-spacing: -0.01em;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border);
-  color: var(--color-foreground);
 }
 
 .prose h3 {
   font-size: 1.15rem;
   font-weight: 600;
   margin: 1.75rem 0 0.5rem;
-  color: var(--color-foreground);
 }
 
 .prose p {
@@ -167,4 +175,89 @@ body {
   margin: 2rem 0;
   border: none;
   border-top: 1px solid var(--color-border);
+}
+
+/* ── Prose styles (Dark) ── */
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3 {
+  color: #F1F5F9;
+}
+
+.dark .prose p {
+  color: #CBD5E1;
+}
+
+.dark .prose a {
+  color: #60A5FA;
+}
+
+.dark .prose a:hover {
+  color: #93C5FD;
+}
+
+.dark .prose code:not(pre code) {
+  background: #334155;
+  color: #FDA4AF;
+}
+
+.dark .prose blockquote {
+  background: #1E293B;
+  color: #94A3B8;
+  border-left-color: #60A5FA;
+}
+
+.dark .prose th {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F1F5F9;
+}
+
+.dark .prose td {
+  border-color: #334155;
+  color: #CBD5E1;
+}
+
+.dark .prose tr:nth-child(even) td {
+  background: #1E293B;
+}
+
+.dark .prose hr {
+  border-top-color: #334155;
+}
+
+/* ── Theme toggle ── */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  color: #64748B;
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  background: #F1F5F9;
+  color: var(--color-foreground);
+}
+
+.dark .theme-toggle {
+  border-color: #334155;
+  color: #94A3B8;
+}
+
+.dark .theme-toggle:hover {
+  background: #1E293B;
+  color: #F1F5F9;
+}
+
+/* ── Prevent FOUC ── */
+html.dark body {
+  background: #0F172A;
 }
