@@ -61,10 +61,11 @@ keep/
 ├── src/components/
 │   ├── AllKnowledge.astro             # 全知识列表（自动分组）
 │   ├── ArticleCard.astro              # 文章链接卡片
+│   ├── ArticleFeedCard.astro          # 首页 Feed 文章卡片（时间线样式）
 │   ├── Breadcrumbs.astro              # 面包屑（自动发现分类名）
-│   ├── CategoryCardGrid.astro         # 首页分类网格（自动发现）
 │   ├── CategoryListing.astro          # 单分类文章列表页
-│   └── CodeDemo.astro                 # 预览+源码展示 (Shiki 高亮)
+│   ├── CodeDemo.astro                 # 预览+源码展示 (Shiki 高亮)
+│   └── HomeFeed.astro                 # 首页 Feed（Pills + 文章流 + 折叠分类）
 ├── src/layouts/
 │   └── Layout.astro                   # 全局布局 (nav, 面包屑, 主题切换, footer)
 ├── src/pages/
@@ -109,7 +110,7 @@ created: 2024-01-15          # 创建日期（可选）
 
 | URL | 处理 | 说明 |
 |---|---|---|
-| `/` | `index.astro` | 首页分类网格（自动发现） |
+| `/` | `index.astro` | 首页 Feed 信息流（Pills + 最近更新 + 折叠分类） |
 | `/knowledge` | `knowledge/index.astro` | 全知识列表（自动分组） |
 | `/knowledge/:category` | `[...slug].astro` | 分类文章列表页 |
 | `/knowledge/:category/:article` | `[...slug].astro` | 文章详情页 |

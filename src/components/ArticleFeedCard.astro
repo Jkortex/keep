@@ -1,0 +1,77 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  entry: CollectionEntry<'knowledge'>;
+}
+
+const { entry } = Astro.props;
+const { title, description, category, tags, created } = entry.data;
+const slug = entry.id.split('/')[0];
+const href = '/knowledge/' + entry.id;
+
+/** 分类 slug → icon SVG */
+function catIcon(s: string): string {
+  const icons: Record<string, string> = {
+    principles:
+      '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+    css: '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m5 12-3 3 3 3"/><path d="m9 18 3-3-3-3"/></svg>',
+    mysql: '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>',
+    redis: '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    engineering: '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>',
+  };
+  return icons[s] ?? icons.principles;
+}
+
+function relativeTime(date: Date): string {
+  const diff = Date.now() - date.getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return '刚刚';
+  if (min < 60) return `${min} 分钟前`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} 小时前`;
+  const d = Math.floor(hr / 24);
+  if (d < 30) return `${d} 天前`;
+  const m = Math.floor(d / 30);
+  return `${m} 个月前`;
+}
+
+const timeLabel = created ? relativeTime(created) : '';
+const accentColors: Record<string, string> = {
+  principles: 'border-l-blue-500',
+  css: 'border-l-purple-500',
+  mysql: 'border-l-emerald-500',
+  redis: 'border-l-red-500',
+  engineering: 'border-l-amber-500',
+};
+const accentClass = accentColors[slug] ?? 'border-l-slate-400';
+---
+
+<a
+  href={href}
+  data-category={slug}
+  class="feed-card group relative block border-l-2 {accentClass} rounded-lg bg-white px-4 py-3.5 no-underline shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:bg-slate-800/50 dark:hover:bg-slate-800 sm:px-5 sm:py-4"
+>
+  <div class="flex items-start gap-3">
+    <div
+      class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-blue-400"
+      set:html={catIcon(slug)}
+    />
+    <div class="min-w-0 flex-1">
+      <h3 class="text-sm font-semibold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400 sm:text-base">
+        {title}
+      </h3>
+      {description && (
+        <p class="mt-0.5 text-xs leading-relaxed text-slate-500 line-clamp-2 dark:text-slate-400 sm:text-sm">
+          {description}
+        </p>
+      )}
+      <div class="mt-2 flex flex-wrap items-center gap-2 text-[0.65rem] text-slate-400 dark:text-slate-500 sm:text-xs">
+        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+          {category}
+        </span>
+        {timeLabel && <span>{timeLabel}</span>}
+      </div>
+    </div>
+  </div>
+</a>

@@ -3,9 +3,12 @@ import '../styles/app.css';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import type { PageMeta } from '../types';
 
-export interface Props extends Partial<PageMeta> {}
+export interface Props extends Partial<PageMeta> {
+  /** 首页/知识列表等宽页面使用 wider 布局 */
+  wide?: boolean;
+}
 
-const { title = 'Keep' } = Astro.props as Props;
+const { title = 'Keep', wide = false } = Astro.props as Props;
 const siteTitle: string = title === 'Keep' ? 'Keep' : `${title} — Keep`;
 const isHome: boolean = Astro.url.pathname === '/';
 ---
@@ -149,9 +152,9 @@ const isHome: boolean = Astro.url.pathname === '/';
     </header>
 
     <!-- Main -->
-    <main class="mx-auto w-full max-w-3xl flex-1 px-6 py-10 md:py-14">
+    <main class="mx-auto w-full flex-1 px-6 py-10 md:py-14 {wide ? 'max-w-5xl' : 'max-w-3xl'}">
       {!isHome && <Breadcrumbs path={Astro.url} />}
-      <article class="prose">
+      <article class="prose {wide ? 'max-w-none' : ''}">
         <slot />
       </article>
     </main>

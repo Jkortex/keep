@@ -39,16 +39,17 @@ src/
 ├── components/
 │   ├── AllKnowledge.astro        # /knowledge 全知识列表（自动分组）
 │   ├── ArticleCard.astro         # 文章链接卡片
+│   ├── ArticleFeedCard.astro     # 首页 Feed 文章卡片
 │   ├── Breadcrumbs.astro         # 面包屑导航（自动发现分类名）
-│   ├── CategoryCardGrid.astro    # 首页分类网格（自动发现分类）
 │   ├── CategoryListing.astro     # 单分类文章列表页
-│   └── CodeDemo.astro            # CSS 示例: 预览 + 源码 (Shiki 高亮)
+│   ├── CodeDemo.astro            # CSS 示例: 预览 + 源码 (Shiki 高亮)
+│   └── HomeFeed.astro            # 首页 Feed（Pills + 文章流 + 分类列表）
 │
 ├── layouts/
 │   └── Layout.astro              # 全局布局 (nav, theme toggle, footer)
 │
 ├── pages/
-│   ├── index.astro               # 首页 — 自动发现分类
+│   ├── index.astro               # 首页 — Feed 信息流（Pills + 最近更新 + 折叠分类）
 │   ├── search.astro              # 全文搜索
 │   └── knowledge/
 │       ├── index.astro           # /knowledge — 所有分类/文章
