@@ -1,13 +1,4 @@
 ---
-/**
- * CodeDemo — 并排展示渲染效果与源码。
- *
- * Props:
- *   code: string   — 源码文本
- *   lang: string   — 代码语言 (default 'html')
- *   files?: { name: string; code: string }[]
- */
-
 interface FileTab {
   name: string;
   code: string;
@@ -22,11 +13,16 @@ const { code, lang = 'html', files } = Astro.props as {
 const sources = files ?? [{ name: `demo.${lang}`, code: code ?? '' }];
 ---
 
-<div class="my-6 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+<div class="not-prose my-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
   <!-- Preview -->
   <section>
-    <div class="flex items-center justify-between border-b border-stone-100 bg-stone-50 px-4 py-2">
-      <span class="text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400">Preview</span>
+    <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2">
+      <span class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">
+        <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12h20" /><path d="M12 2v20" />
+        </svg>
+        Preview
+      </span>
     </div>
     <div class="flex min-h-[120px] items-center justify-center p-6">
       <slot />
@@ -34,21 +30,29 @@ const sources = files ?? [{ name: `demo.${lang}`, code: code ?? '' }];
   </section>
 
   <!-- Code -->
-  <section class="border-t border-stone-200">
-    <div class="flex items-center gap-2 border-b border-stone-100 bg-stone-50 px-4 py-2">
-      <span class="text-[0.7rem] font-semibold uppercase tracking-widest text-stone-400">Source</span>
-      <span class="rounded bg-stone-200 px-1.5 py-0.5 text-[0.65rem] font-mono text-stone-500">{lang}</span>
+  <section class="border-t border-slate-200">
+    <div class="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2">
+      <span class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">
+        <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+          <path d="m5 12-3 3 3 3" />
+          <path d="m9 18 3-3-3-3" />
+        </svg>
+        Source
+      </span>
+      <span class="rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[0.65rem] text-slate-500">{lang}</span>
     </div>
     <div class="max-h-96 overflow-auto">
       {
         sources.map((file) => (
           <details open>
             {sources.length > 1 && (
-              <summary class="cursor-pointer border-b border-stone-100 bg-stone-50/50 px-4 py-1.5 text-xs font-mono text-stone-500 select-none hover:bg-stone-100/50">
+              <summary class="cursor-pointer border-b border-slate-100 bg-slate-50/50 px-4 py-1.5 font-mono text-xs text-slate-500 select-none hover:bg-slate-100/50 transition-colors">
                 {file.name}
               </summary>
             )}
-            <pre class="m-0 overflow-x-auto bg-stone-900 p-4 text-sm leading-relaxed text-stone-100"><code>{file.code}</code></pre>
+            <pre class="m-0 overflow-x-auto bg-slate-900 p-4 text-sm leading-relaxed text-slate-100"><code>{file.code}</code></pre>
           </details>
         ))
       }

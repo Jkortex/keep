@@ -3,10 +3,36 @@ import Layout from '../../../layouts/Layout.astro';
 ---
 
 <Layout title="软件工程原则">
-  <h1>软件工程原则</h1>
+  <section class="not-prose">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+          <path d="M9 22v-4h6v4" />
+          <path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" />
+          <path d="M12 10h.01" /><path d="M12 14h.01" />
+          <path d="M16 10h.01" /><path d="M16 14h.01" />
+          <path d="M8 10h.01" /><path d="M8 14h.01" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900">软件工程原则</h1>
+    </div>
 
-  <ul>
-    <li><a href="/knowledge/principles/cap-theorem">CAP 定理</a> — Consistency、Availability、Partition Tolerance</li>
-    <li><a href="/knowledge/principles/conways-law">康威定律</a> — 组织架构决定系统架构</li>
-  </ul>
+    <div class="space-y-0.5">
+      <a href="/knowledge/principles/cap-theorem" class="flex items-center gap-2 py-2.5 px-3 -mx-3 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors no-underline">
+        <svg class="h-4 w-4 shrink-0 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+        <div>
+          <div class="font-medium text-sm">CAP 定理</div>
+          <div class="text-xs text-slate-400 mt-0.5">Consistency、Availability、Partition Tolerance</div>
+        </div>
+      </a>
+      <a href="/knowledge/principles/conways-law" class="flex items-center gap-2 py-2.5 px-3 -mx-3 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors no-underline">
+        <svg class="h-4 w-4 shrink-0 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+        <div>
+          <div class="font-medium text-sm">康威定律</div>
+          <div class="text-xs text-slate-400 mt-0.5">组织架构决定系统架构</div>
+        </div>
+      </a>
+    </div>
+  </section>
 </Layout>

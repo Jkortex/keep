@@ -13,21 +13,56 @@ const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{siteTitle}</title>
   </head>
   <body class="min-h-screen flex flex-col">
     <!-- Nav -->
-    <header class="sticky top-0 z-50 border-b border-stone-200 bg-surface/80 backdrop-blur-md">
+    <header class="sticky top-0 z-50 border-b border-slate-200 bg-[#F8FAFC]/80 backdrop-blur-md">
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-        <a href="/" class="flex items-center gap-2 text-lg font-bold text-stone-900 no-underline">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm text-white font-bold">K</span>
-          <span>Keep</span>
+        <a href="/" class="flex items-center gap-2.5 no-underline group">
+          <!-- Lucide BookOpen icon -->
+          <svg
+            class="h-5 w-5 text-slate-700 group-hover:text-blue-600 transition-colors"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24" height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          </svg>
+          <span class="text-base font-semibold tracking-tight text-slate-800">Keep</span>
         </a>
-        <div class="flex items-center gap-6 text-sm">
-          <a href="/knowledge" class="text-stone-500 hover:text-brand-600 transition-colors no-underline font-medium">
+        <div class="flex items-center gap-5 text-sm">
+          <a href="/knowledge" class="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition-colors no-underline font-medium">
+            <!-- Lucide Library icon -->
+            <svg
+              class="h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 6.9V2H8v4.9" />
+              <path d="M14 2v4h-4" />
+              <path d="M18 22h-2V8h2Z" />
+              <path d="M8 22H6V8h2Z" />
+              <path d="M22 13v-2h-6v2Z" />
+              <path d="M22 17.5v-3h-6v3Z" />
+              <path d="M8 22H2v-2h6Z" />
+              <path d="M8 17.5H2v-3h6Z" />
+            </svg>
             所有知识
           </a>
         </div>
@@ -42,8 +77,8 @@ const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-stone-200 py-6 text-center text-xs text-stone-400">
-      Knowledge Keep
+    <footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+      <span>Knowledge Keep</span>
     </footer>
   </body>
 </html>
