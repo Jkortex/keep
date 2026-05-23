@@ -22,20 +22,5 @@ export interface CodeDemoProps {
   files?: SourceFile[];
 }
 
-/** 知识分类卡片 */
-export interface CategoryCard {
-  href: string;
-  title: string;
-  description: string;
-  count: number;
-}
-
-/** 知识条目链接 */
-export interface KnowledgeLink {
-  href: string;
-  title: string;
-  summary?: string;
-}
-
 /** TOC 目录项 */
 export type TocItem = MarkdownHeading;

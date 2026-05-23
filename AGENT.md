@@ -2,16 +2,14 @@
 
 ## Project Overview
 
-个人/团队知识记录平台。两种内容共存：
-- **纯知识页面**：CAP 定理、康威定律等 — 写 `.mdx`，零组件
-- **CSS 示例页面**：效果预览 + 源码展示 — `.mdx` + `<CodeDemo>` 组件
+个人/团队知识记录平台。基于 Astro Content Collections 的数据驱动架构。
 
 ## Tech Stack
 
 | 层 | 技术 |
 |---|---|
-| 框架 | Astro 6 |
-| 内容 | MDX |
+| 框架 | Astro 6 (SSG) |
+| 内容 | MDX via Astro Content Collections |
 | 样式 | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | 类型 | TypeScript 6 (strict) |
 | 包管理 | pnpm 11 |
@@ -25,56 +23,125 @@
 
 ```
 src/
-├── components/
-│   ├── Breadcrumbs.astro      # 面包屑导航 (auto from URL)
-│   ├── CategoryCard.astro     # 首页分类卡片
-│   └── CodeDemo.astro         # CSS 示例: 预览 + 源码 (Shiki 高亮)
-├── layouts/
-│   └── Layout.astro           # 全局布局 (nav, theme toggle, footer)
-├── pages/
-│   ├── index.astro            # 首页
-│   ├── search.astro           # 全文搜索
+├── content/
+│   ├── config.ts              # Zod schema for knowledge collection
 │   └── knowledge/
-│       ├── index.astro        # 所有知识列表
+│       ├── principles/
+│       │   ├── cap-theorem.mdx
+│       │   └── conways-law.mdx
 │       ├── css/
-│       │   └── flexbox.mdx    # CSS 示例页 (含 CodeDemo)
-│       └── principles/
-│           ├── index.astro    # 原则列表
-│           ├── cap-theorem.mdx
-│           └── conways-law.mdx
+│       │   ├── flexbox.mdx
+│       │   └── flexbox.css
+│       ├── mysql/              # 新分类直接加目录
+│       ├── redis/
+│       └── engineering/
+│
+├── components/
+│   ├── AllKnowledge.astro        # /knowledge 全知识列表（自动分组）
+│   ├── ArticleCard.astro         # 文章链接卡片
+│   ├── Breadcrumbs.astro         # 面包屑导航（自动发现分类名）
+│   ├── CategoryCardGrid.astro    # 首页分类网格（自动发现分类）
+│   ├── CategoryListing.astro     # 单分类文章列表页
+│   └── CodeDemo.astro            # CSS 示例: 预览 + 源码 (Shiki 高亮)
+│
+├── layouts/
+│   └── Layout.astro              # 全局布局 (nav, theme toggle, footer)
+│
+├── pages/
+│   ├── index.astro               # 首页 — 自动发现分类
+│   ├── search.astro              # 全文搜索
+│   └── knowledge/
+│       ├── index.astro           # /knowledge — 所有分类/文章
+│       └── [...slug].astro       # 动态路由: 分类页 / 文章页
+│
 └── styles/
-    └── app.css                # 全局样式 + Tailwind theme tokens
+    └── app.css                   # 全局样式 + Tailwind theme tokens
+
+src/content.config.ts              # Content Collections 配置
 ```
+
+### 路由规则
+
+```
+/knowledge                          → knowledge/index.astro (全知识列表)
+/knowledge/principles               → [...slug].astro      (分类页)
+/knowledge/principles/cap-theorem   → [...slug].astro      (文章页)
+/knowledge/css                      → [...slug].astro      (分类页)
+/knowledge/css/flexbox              → [...slug].astro      (文章页)
+```
+
+分类 slug 由 `src/content/knowledge/` 下的子目录名决定，**自动发现**。
 
 ### 内容类型
 
-**纯知识页面** — 直接写 MDX，不需要额外组件：
+**纯知识页面** — 直接在 MDX 中写 Markdown：
+
 ```mdx
 ---
-layout: ../../../layouts/Layout.astro
 title: CAP 定理
+category: 软件工程原则
+description: Consistency、Availability、Partition Tolerance
+tags: [分布式, 数据库, 理论]
+order: 1
 ---
-
-# CAP 定理
 
 正文用纯 Markdown 即可…
 ```
 
 **CSS 示例页面** — 使用 `<CodeDemo>` 展示效果+源码：
+
 ```mdx
 ---
-layout: ../../../layouts/Layout.astro
 title: CSS Flexbox 居中
+category: CSS 示例
+description: 使用 Flexbox 实现水平和垂直居中
+tags: [CSS, 布局, Flexbox]
+order: 1
 ---
 
 import CodeDemo from '../../../components/CodeDemo.astro';
+import './flexbox.css';
 
-正文描述…
+说明文字…
 
 <CodeDemo code={源码字符串} lang="html">
   <div class="demo">实际渲染内容</div>
 </CodeDemo>
 ```
+
+### Frontmatter Schema
+
+```ts
+{
+  title: z.string(),              // 文章标题
+  category: z.string(),           // 分类显示名，如 "软件工程原则"
+  description: z.string().optional(), // 摘要
+  tags: z.array(z.string()).optional().default([]),  // 标签
+  order: z.number().optional().default(0),  // 同分类排序权重
+  created: z.date().optional(),   // 创建日期
+  updated: z.date().optional(),   // 更新日期
+}
+```
+
+## 添加新内容流程
+
+### 新建分类
+
+只需两步：
+
+```bash
+mkdir src/content/knowledge/<分类目录>
+# 写 .mdx 文件
+```
+
+**不需要**改任何路由、组件、配置文件。自动出现在首页、知识列表、搜索索引中。
+
+### 新建文章
+
+在对应分类目录下创建 `.mdx` 文件，按 frontmatter schema 填写元数据。
+
+- CSS 示例需在同目录放 `.css` 文件，MDX 中 import
+- 纯知识页面不需要额外组件
 
 ## Design System
 
@@ -97,6 +164,7 @@ Border      #E2E8F0  (slate-200)
 
 ### 图标
 使用 **Lucide** SVG 图标，禁止使用 emoji 作为结构性图标。
+分类图标映射在 `src/components/CategoryCardGrid.astro` 的 `CATEGORY_ICONS` 中维护。
 
 ## Commands
 
@@ -118,56 +186,36 @@ pnpm format:check    # 格式化检查 (CI)
 - 缩进: 2 spaces
 - 行宽: 100 chars
 
-格式化通过 Prettier 自动执行。VSCode 已配置 format-on-save。
-
 ### TypeScript
 - `tsconfig.json` extends `astro/tsconfigs/strict`
 - 共享类型定义在 `src/types.ts`
 - Layout Props 使用 `extends Partial<PageMeta>`
 - 组件 Props 使用 interface + `Astro.props as Props` 模式
 
-### Component Props 模式
-```astro
----
-export interface Props {
-  href: string;
-  title: string;
-}
-const { href, title } = Astro.props as Props;
----
-```
-
 ### 命名
 - 组件: PascalCase
-- 文件/目录: kebab-case (Astro 项目约定)
-- 类型: PascalCase (`CodeDemoProps`, `SourceFile`)
+- 文件/目录: kebab-case
+- 类型: PascalCase
 
 ### 样式
 - Tailwind utility classes 优先
-- 全局 prose 样式在 `app.css` 中定义，有 light/dark 变量
+- 全局 prose 样式在 `app.css` 中定义
 - 自定义 CSS 使用 `@theme` tokens (`bg-brand-50`, `text-brand-600`)
-
-## Content Creation
-
-添加新知识页面的步骤：
-
-1. 在 `src/pages/knowledge/` 下找到对应分类目录，或新建目录
-2. 创建 `.mdx` 文件，frontmatter 包含 `layout` 和 `title`
-3. 纯知识直接写 Markdown；CSS 示例引入 `<CodeDemo>`
-4. 更新对应分类的 `index.astro` 页面，添加链接
-5. 如果涉及新分类，还要更新 `src/pages/index.astro` 首页卡片
-
-> 注意：`Layout.astro` 会自动处理面包屑导航（基于 URL 路径），无需手动配置。
 
 ## Key Design Decisions
 
-- **MDX 显式导入**：CodeDemo 的源码通过 template literal 传入，不依赖 Vite `?raw`
-- **暗色主题**：class-based，localStorage 持久化，FOUC  prevention 在 `<head>` inline script
-- **搜索**：构建时 Pagefind 索引，运行时浏览器端查询 `/pagefind/pagefind.js`
+- **Content Collections**：所有知识文章在 `src/content/knowledge/` 下，按分类分目录
+- **动态路由**：`[...slug].astro` 统一处理分类页和文章页，新增内容零配置
+- **数据驱动**：首页、知识列表、分类页都通过 `getCollection()` 自动查询
+- **面包屑自动**：从 content collection 元数据自动发现分类显示名
+- **暗色主题**：class-based，localStorage 持久化，FOUC prevention
+- **搜索**：Pagefind 构建时索引，浏览器端查询
 - **无数据库**：文件系统即知识库，git 即版本控制
-- **无用户系统**：个人→小团队场景，git 就是权限层
+- **无用户系统**：个人→小团队场景
 
 ## Related Docs
 
+- `docs/HANDOVER.md` — 交接文档
 - `docs/ideas/knowledge-keep.md` — 原始方案文档
 - `.github/workflows/ci.yml` — CI/CD 流程
+- `src/content.config.ts` — 数据结构和 schema

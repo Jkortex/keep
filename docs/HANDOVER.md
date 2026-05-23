@@ -31,7 +31,7 @@ pnpm format         # Prettier 格式化全部文件
 | 层 | 技术 | 说明 |
 |---|---|---|
 | 框架 | Astro 6 | SSG，输出纯静态 HTML |
-| 内容 | MDX | 知识页面即文件 |
+| 内容 | MDX via Content Collections | 文件系统即知识库 |
 | 样式 | Tailwind CSS v4 | via `@tailwindcss/vite` 插件 |
 | 类型 | TypeScript 6 (strict) | `pnpm check` 验证 |
 | 搜索 | Pagefind | 构建时索引，浏览器端查询 |
@@ -45,32 +45,37 @@ pnpm format         # Prettier 格式化全部文件
 
 ```
 keep/
-├── AGENT.md                           # AI agent 上下文说明（新接手先读这个）
-├── docs/
-│   ├── ideas/knowledge-keep.md        # 原始方案文档
-│   └── HANDOVER.md                    # 本文件
-├── src/
-│   ├── components/
-│   │   ├── Breadcrumbs.astro          # 面包屑导航
-│   │   ├── CategoryCard.astro         # 首页分类卡片
-│   │   └── CodeDemo.astro             # 预览+源码展示 (Shiki 高亮)
-│   ├── layouts/
-│   │   └── Layout.astro               # 全局布局 (nav, 面包屑, 主题切换, footer)
-│   ├── pages/
-│   │   ├── index.astro                # 首页
-│   │   ├── search.astro               # 搜索页 (Pagefind)
-│   │   └── knowledge/
-│   │       ├── index.astro            # 所有知识列表
-│   │       ├── css/
-│   │       │   ├── flexbox.mdx        # CSS 示例页
-│   │       │   └── flexbox.css
-│   │       └── principles/
-│   │           ├── index.astro        # 原则列表
-│   │           ├── cap-theorem.mdx
-│   │           └── conways-law.mdx
-│   ├── styles/
-│   │   └── app.css                    # 全局样式 + Tailwind tokens
-│   └── types.ts                       # 共享类型定义
+├── AGENT.md                           # AI agent 上下文说明
+├── src/content.config.ts              # Content Collections schema
+├── src/content/
+│   └── knowledge/                     # 所有知识文章（按分类分目录）
+│       ├── principles/
+│       │   ├── cap-theorem.mdx
+│       │   └── conways-law.mdx
+│       ├── css/
+│       │   ├── flexbox.mdx
+│       │   └── flexbox.css
+│       ├── mysql/                     # (待填充)
+│       ├── redis/                     # (待填充)
+│       └── engineering/               # (待填充)
+├── src/components/
+│   ├── AllKnowledge.astro             # 全知识列表（自动分组）
+│   ├── ArticleCard.astro              # 文章链接卡片
+│   ├── Breadcrumbs.astro              # 面包屑（自动发现分类名）
+│   ├── CategoryCardGrid.astro         # 首页分类网格（自动发现）
+│   ├── CategoryListing.astro          # 单分类文章列表页
+│   └── CodeDemo.astro                 # 预览+源码展示 (Shiki 高亮)
+├── src/layouts/
+│   └── Layout.astro                   # 全局布局 (nav, 面包屑, 主题切换, footer)
+├── src/pages/
+│   ├── index.astro                    # 首页（自动发现分类）
+│   ├── search.astro                   # 搜索页 (Pagefind)
+│   └── knowledge/
+│       ├── index.astro                # /knowledge — 全知识列表
+│       └── [...slug].astro            # 动态路由：分类页 / 文章页
+├── src/styles/
+│   └── app.css                        # 全局样式 + Tailwind tokens
+├── src/types.ts                       # 共享类型定义
 ├── public/
 │   ├── favicon.svg / .ico
 │   └── robots.txt
@@ -82,16 +87,68 @@ keep/
 
 ---
 
+## 数据驱动架构
+
+### Content Collections
+
+所有知识文章以 MDX 形式存放在 `src/content/knowledge/` 下，按分类分目录。  
+Schema 定义在 `src/content.config.ts`，每个 MDX 文件必须包含以下 frontmatter：
+
+```yaml
+---
+title: CAP 定理              # 文章标题
+category: 软件工程原则        # 分类显示名
+description: Consistency…     # 摘要（可选）
+tags: [分布式, 数据库]        # 标签（可选）
+order: 1                     # 排序权重（可选）
+created: 2024-01-15          # 创建日期（可选）
+---
+```
+
+### 路由规则
+
+| URL | 处理 | 说明 |
+|---|---|---|
+| `/` | `index.astro` | 首页分类网格（自动发现） |
+| `/knowledge` | `knowledge/index.astro` | 全知识列表（自动分组） |
+| `/knowledge/:category` | `[...slug].astro` | 分类文章列表页 |
+| `/knowledge/:category/:article` | `[...slug].astro` | 文章详情页 |
+| `/search` | `search.astro` | 全文搜索 |
+
+### 自动发现机制
+
+- **首页分类**：`CategoryCardGrid.astro` 通过 `getCollection('knowledge')` 自动获取所有分类和文章数
+- **知识列表**：`AllKnowledge.astro` 按 frontmatter 的 `category` 字段自动分组
+- **面包屑**：`Breadcrumbs.astro` 从 content collection 元数据自动查找分类显示名
+- **搜索索引**：Pagefind 构建时自动索引所有 HTML
+
+### 添加新内容流程
+
+```bash
+# 1. 新建分类（首次）
+mkdir src/content/knowledge/mysql
+
+# 2. 创建文章
+nvim src/content/knowledge/mysql/transaction-isolation.mdx
+```
+
+**无需修改任何已有文件。** 构建时自动发现并生成对应页面。
+
+---
+
 ## 两种内容模式
 
 ### 纯知识页面（如 CAP 定理）
 
-创建 `.mdx` 文件，frontmatter + Markdown 正文：
+创建 `.mdx` 文件，填写 frontmatter + Markdown 正文：
 
 ```mdx
 ---
-layout: ../../../layouts/Layout.astro
 title: SOLID 原则
+category: 软件工程原则
+description: 面向对象设计的五个基本原则
+tags: [OOP, 设计模式]
+order: 3
 ---
 
 # SOLID 原则
@@ -103,8 +160,11 @@ title: SOLID 原则
 
 ```mdx
 ---
-layout: ../../../layouts/Layout.astro
 title: CSS Grid 布局
+category: CSS 示例
+description: 使用 Grid 实现二维布局
+tags: [CSS, 布局, Grid]
+order: 2
 ---
 
 import CodeDemo from '../../../components/CodeDemo.astro';
@@ -117,13 +177,6 @@ import CodeDemo from '../../../components/CodeDemo.astro';
 ```
 
 > 页面样式写在同目录的 `.css` 文件中，MDX 里 `import './xxx.css'`。
-
-### 添加新分类
-
-1. `src/pages/knowledge/<分类>/` 下创建 `.mdx` 文件
-2. 更新该目录的 `index.astro` 添加条目链接
-3. 如果是全新分类，在 `src/pages/index.astro` 加一个 `<CategoryCard>`
-4. 面包屑导航是自动的，无需手动配置
 
 ---
 
@@ -146,9 +199,10 @@ import CodeDemo from '../../../components/CodeDemo.astro';
 - 高亮在构建时 Astro 组件中异步完成
 
 ### 面包屑
-- 基于 `Astro.url.pathname` 自动生成
-- 路径段 → 显示名映射在 `Breadcrumbs.astro` 的 `labels` 对象中
-- 添加新目录时需要更新 `labels` 映射
+- 自动基于 URL 路径生成
+- 分类显示名从 content collection 元数据自动获取
+- 文章标题从 frontmatter 自动获取
+- 无需手动配置
 
 ---
 
@@ -178,12 +232,14 @@ Vercel 连接了 GitHub 仓库，main 分支 push 会自动构建部署到生产
 
 | 事项 | 优先级 | 备注 |
 |---|---|---|
-| 更多知识条目 | 持续 | 当前只有 3 篇，内容库需要持续填充 |
-| 标签系统 | 低 | 可以在 frontmatter 加 `tags`，然后用 `getCollection()` 筛选 |
+| 更多知识条目 | 持续 | 需要持续填充内容 |
+| 标签筛选系统 | 中 | 利用已有 `tags` 字段，添加标签列表页和筛选 |
 | 图表/图示 | 低 | CAP 定理如果有维恩图会更清晰，可用 Mermaid 或图片 |
 | 双向链接 | 低 | wiki 风格 `[[link]]` 需要 remark 插件 |
 | 自定义域名 | 低 | Vercel 项目 Settings → Domains 绑定 |
 | RSS | 低 | `@astrojs/rss` 可生成订阅源 |
+| 分类图标自定义 | 低 | 当前 `CategoryCardGrid.astro` 中硬编码图标映射 |
+| 分类描述自定义 | 低 | 当前 `CategoryCardGrid.astro` 中硬编码描述文本 |
 
 ---
 

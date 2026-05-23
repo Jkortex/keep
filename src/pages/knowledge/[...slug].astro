@@ -1,0 +1,64 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CategoryListing from '../../components/CategoryListing.astro';
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('knowledge');
+
+  // Unique category slugs from entry IDs
+  const categories = [...new Set(articles.map((a) => a.id.split('/')[0]))];
+
+  const paths: {
+    params: { slug: string | undefined };
+    props: { pageType: 'category' | 'article'; category?: string; entry?: CollectionEntry<'knowledge'> };
+  }[] = [];
+
+  // Category listing pages: /knowledge/principles, /knowledge/css, etc.
+  for (const cat of categories) {
+    paths.push({
+      params: { slug: cat },
+      props: { pageType: 'category', category: cat },
+    });
+  }
+
+  // Article pages: /knowledge/principles/cap-theorem, etc.
+  // Slug is the full entry ID path, e.g., "principles/cap-theorem"
+  for (const article of articles) {
+    paths.push({
+      params: { slug: article.id },
+      props: { pageType: 'article', entry: article },
+    });
+  }
+
+  return paths;
+}
+
+const { pageType, category, entry } = Astro.props;
+
+let ArticleContent: any;
+let title: string;
+
+if (pageType === 'article' && entry) {
+  const { Content } = await render(entry);
+  ArticleContent = Content;
+  title = entry.data.title;
+} else if (pageType === 'category' && category) {
+  // Get category display name from the first article in this category
+  const catArticles = await getCollection('knowledge', (e) =>
+    e.id.startsWith(category + '/'),
+  );
+  title = catArticles[0]?.data?.category ?? category;
+} else {
+  title = '知识';
+}
+---
+
+<Layout title={title}>
+  {
+    pageType === 'category' && category
+      ? <CategoryListing category={category} />
+      : ArticleContent && <ArticleContent />
+  }
+</Layout>

@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from './ArticleCard.astro';
+
+const articles = await getCollection('knowledge');
+articles.sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+
+// Group by category (using display name as key, slug mapping as value)
+const groupMap = new Map<string, { slug: string; items: typeof articles }>();
+
+for (const article of articles) {
+  const cat = article.data.category;
+  const slug = article.id.split('/')[0];
+  if (!groupMap.has(cat)) {
+    groupMap.set(cat, { slug, items: [] });
+  }
+  groupMap.get(cat)!.items.push(article);
+}
+---
+
+<section class="not-prose">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">所有知识</h1>
+
+  <div class="mt-10">
+    {Array.from(groupMap.entries()).map(([categoryName, { slug, items }]) => (
+      <div class="mb-8">
+        <div class="mb-4 flex items-center gap-2">
+          <svg
+            class="h-5 w-5 text-blue-600 dark:text-blue-400"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+            <path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path>
+            <path d="M12 10h.01"></path><path d="M12 14h.01"></path>
+            <path d="M16 10h.01"></path><path d="M16 14h.01"></path>
+            <path d="M8 10h.01"></path><path d="M8 14h.01"></path>
+          </svg>
+          <a
+            href={'/knowledge/' + slug}
+            class="text-lg font-semibold text-slate-800 no-underline hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-400"
+          >
+            {categoryName}
+          </a>
+          <span class="text-xs text-slate-400 dark:text-slate-500">({items.length} 篇)</span>
+        </div>
+        <div class="space-y-0.5">
+          {items.map((article) => <ArticleCard entry={article} />)}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {articles.length === 0 && (
+    <p class="text-sm text-slate-400 dark:text-slate-500">暂无内容</p>
+  )}
+</section>

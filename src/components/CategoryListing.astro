@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from './ArticleCard.astro';
+
+export interface Props {
+  /** Category slug, e.g. "principles" */
+  category: string;
+}
+
+const { category } = Astro.props;
+
+const articles = await getCollection('knowledge', (entry) =>
+  entry.id.startsWith(category + '/'),
+);
+
+articles.sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+
+const categoryTitle = articles[0]?.data?.category ?? category;
+---
+
+<section class="not-prose">
+  <div class="mb-6 flex items-center gap-3">
+    <div
+      class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-blue-400"
+    >
+      <svg
+        class="h-5 w-5"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+        <path d="M9 22v-4h6v4"></path>
+        <path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path>
+        <path d="M12 10h.01"></path><path d="M12 14h.01"></path>
+        <path d="M16 10h.01"></path><path d="M16 14h.01"></path>
+        <path d="M8 10h.01"></path><path d="M8 14h.01"></path>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      {categoryTitle}
+    </h1>
+  </div>
+
+  <div class="space-y-0.5">
+    {articles.map((article) => <ArticleCard entry={article} />)}
+  </div>
+
+  {articles.length === 0 && (
+    <p class="text-sm text-slate-400 dark:text-slate-500">此分类暂无内容</p>
+  )}
+</section>
