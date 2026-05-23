@@ -42,11 +42,11 @@ src/pages/knowledge/
 
 一键部署到免费平台：
 
-| 平台 | 构建命令 | 发布目录 | 备注 |
-|---|---|---|---|
-| [Vercel](https://vercel.com) | `pnpm build` | `dist/` | 最推荐，Astro 原生支持 |
-| [Netlify](https://netlify.com) | `pnpm build` | `dist/` | 同样方便 |
-| [Cloudflare Pages](https://pages.cloudflare.com) | `pnpm build` | `dist/` | 全球 CDN |
-| GitHub Pages | 通过 `.github/workflows/ci.yml` | `dist/` | 免费，需配置 `base` |
+| 平台                                             | 构建命令                        | 发布目录 | 备注                   |
+| ------------------------------------------------ | ------------------------------- | -------- | ---------------------- |
+| [Vercel](https://vercel.com)                     | `pnpm build`                    | `dist/`  | 最推荐，Astro 原生支持 |
+| [Netlify](https://netlify.com)                   | `pnpm build`                    | `dist/`  | 同样方便               |
+| [Cloudflare Pages](https://pages.cloudflare.com) | `pnpm build`                    | `dist/`  | 全球 CDN               |
+| GitHub Pages                                     | 通过 `.github/workflows/ci.yml` | `dist/`  | 免费，需配置 `base`    |
 
 > 提示：Vercel / Netlify 连接到 GitHub 仓库后自动部署，无需手动配置 CI。

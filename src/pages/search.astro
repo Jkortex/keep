@@ -7,8 +7,19 @@ import Layout from '../layouts/Layout.astro';
     <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">搜索</h1>
     <div class="mt-6">
       <div class="relative">
-        <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+        <svg
+          class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>
         </svg>
         <input
           id="search-input"
@@ -42,7 +53,10 @@ import Layout from '../layouts/Layout.astro';
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(async () => {
         const query = input.value.trim();
-        if (!query) { results.innerHTML = ''; return; }
+        if (!query) {
+          results.innerHTML = '';
+          return;
+        }
 
         const pf = await getPagefind();
         const res = await pf.search(query);
@@ -52,9 +66,7 @@ import Layout from '../layouts/Layout.astro';
           return;
         }
 
-        const items = await Promise.all(
-          res.results.slice(0, 20).map((r) => r.data())
-        );
+        const items = await Promise.all(res.results.slice(0, 20).map((r) => r.data()));
 
         results.innerHTML = items
           .map(
@@ -63,7 +75,7 @@ import Layout from '../layouts/Layout.astro';
                 <div class="text-sm font-medium text-slate-900 dark:text-slate-100">${item.meta?.title || item.url}</div>
                 ${item.excerpt ? `<div class="mt-1 text-xs text-slate-500 dark:text-slate-400">${item.excerpt}</div>` : ''}
               </a>
-            `
+            `,
           )
           .join('');
       }, 150);
