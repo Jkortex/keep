@@ -1,12 +1,11 @@
 ---
 import '../styles/app.css';
+import type { PageMeta } from '../types';
 
-export interface Props {
-  title?: string;
-}
+export interface Props extends Partial<PageMeta> {}
 
 const { title = 'Keep' } = Astro.props as Props;
-const siteTitle = title === 'Keep' ? 'Keep' : `${title} — Keep`;
+const siteTitle: string = title === 'Keep' ? 'Keep' : `${title} — Keep`;
 ---
 
 <!doctype html>

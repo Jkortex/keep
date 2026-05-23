@@ -1,16 +1,9 @@
 ---
-interface FileTab {
-  name: string;
-  code: string;
-}
+import type { CodeDemoProps, SourceFile } from '../types';
 
-const { code, lang = 'html', files } = Astro.props as {
-  code?: string;
-  lang?: string;
-  files?: FileTab[];
-};
+const { code, lang = 'html', files } = Astro.props as CodeDemoProps;
 
-const sources = files ?? [{ name: `demo.${lang}`, code: code ?? '' }];
+const sources: SourceFile[] = files ?? [{ name: `demo.${lang}`, code: code ?? '' }];
 ---
 
 <div class="not-prose my-6 overflow-hidden rounded-xl border shadow-sm border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50">
