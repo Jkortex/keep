@@ -10,10 +10,11 @@ type Article = CollectionEntry<'knowledge'>;
  * title 将覆盖文章 frontmatter 中的 `category` 字段。 */
 export const CATEGORIES = {
   principles: { title: '软件工程原则', order: 0 },
-  css: { title: 'CSS 示例', order: 1 },
-  mysql: { title: 'MySQL 笔记', order: 2 },
-  redis: { title: 'Redis 笔记', order: 3 },
-  engineering: { title: '工程实践', order: 4 },
+  laws: { title: '软件工程定律', order: 1 },
+  css: { title: 'CSS 示例', order: 2 },
+  mysql: { title: 'MySQL 笔记', order: 3 },
+  redis: { title: 'Redis 笔记', order: 4 },
+  engineering: { title: '工程实践', order: 5 },
 } as const;
 
 export type CategorySlug = keyof typeof CATEGORIES;
