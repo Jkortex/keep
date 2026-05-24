@@ -1,21 +1,18 @@
 ---
 import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
+import * as k from '../lib/knowledge';
 
 export interface Props {
-  /** Category slug, e.g. "principles" */
   category: string;
 }
 
 const { category } = Astro.props;
 
-const articles = await getCollection('knowledge', (entry) =>
-  entry.id.startsWith(category + '/'),
-);
+const articles = await getCollection('knowledge', (entry) => entry.id.startsWith(category + '/'));
 
-articles.sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
-
-const categoryTitle = articles[0]?.data?.category ?? category;
+const sorted = k.sortByOrder(articles);
+const title = k.getCategoryLabel(category);
 ---
 
 <section class="not-prose">
@@ -25,9 +22,6 @@ const categoryTitle = articles[0]?.data?.category ?? category;
     >
       <svg
         class="h-5 w-5"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -44,15 +38,13 @@ const categoryTitle = articles[0]?.data?.category ?? category;
       </svg>
     </div>
     <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-      {categoryTitle}
+      {title}
     </h1>
   </div>
 
   <div class="space-y-0.5">
-    {articles.map((article) => <ArticleCard entry={article} />)}
+    {sorted.map((article) => <ArticleCard entry={article} />)}
   </div>
 
-  {articles.length === 0 && (
-    <p class="text-sm text-slate-400 dark:text-slate-500">此分类暂无内容</p>
-  )}
+  {sorted.length === 0 && <p class="text-sm text-slate-400 dark:text-slate-500">此分类暂无内容</p>}
 </section>

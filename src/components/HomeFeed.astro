@@ -1,52 +1,29 @@
 ---
 import { getCollection } from 'astro:content';
-import ArticleFeedCard from './ArticleFeedCard.astro';
-import type { CollectionEntry } from 'astro:content';
+import ArticleCard from './ArticleCard.astro';
+import * as k from '../lib/knowledge';
 
 const articles = await getCollection('knowledge');
 
-// Group by category slug
-const catMap = new Map<string, { title: string; items: CollectionEntry<'knowledge'>[] }>();
-for (const a of articles) {
-  const slug = a.id.split('/')[0];
-  if (!catMap.has(slug)) catMap.set(slug, { title: a.data.category, items: [] });
-  catMap.get(slug)!.items.push(a);
-}
-
-// Category list for pills & collapsible section
-interface CatInfo {
-  slug: string;
-  title: string;
-  count: number;
-}
-const categories: CatInfo[] = Array.from(catMap.entries())
-  .map(([slug, v]) => ({ slug, title: v.title, count: v.items.length }))
-  .sort((a, b) => a.title.localeCompare(b.title, 'zh'));
-
-// Sort articles: by created desc, then by order asc
-const sorted = [...articles].sort((a, b) => {
-  const da = a.data.created?.getTime() ?? 0;
-  const db = b.data.created?.getTime() ?? 0;
-  if (da !== db) return db - da;
-  return (a.data.order ?? 0) - (b.data.order ?? 0);
-});
-
+const categories = k.getCategories(articles);
+const sorted = k.sortByCreated(articles);
 const totalCount = articles.length;
-
-/** Category slug → accent border color class */
-function accent(slug: string): string {
-  const map: Record<string, string> = {
-    principles: 'border-l-blue-500',
-    css: 'border-l-purple-500',
-    mysql: 'border-l-emerald-500',
-    redis: 'border-l-red-500',
-    engineering: 'border-l-amber-500',
-  };
-  return map[slug] ?? 'border-l-slate-400';
-}
 ---
 
 <section class="not-prose">
+  <!-- Premium Hero Section -->
+  <div class="mb-12 mt-4 text-center sm:text-left animate-fade-in-up">
+    <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+      Keep <span
+        class="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-teal-400"
+        >Knowledge</span
+      >
+    </h1>
+    <p class="mt-3 max-w-2xl text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+      软件工程原则 · 架构演进 · 优雅 CSS 示例 · 开发技术沉淀与技术思考的个人知识库。
+    </p>
+  </div>
+
   <!-- Pills -->
   <div class="feed-pills -mx-6 mb-6 overflow-x-auto px-6 pb-2 scrollbar-none sm:-mx-0 sm:px-0">
     <div class="flex gap-2">
@@ -56,89 +33,167 @@ function accent(slug: string): string {
       >
         所有
       </button>
-      {categories.map((cat) => (
-        <button
-          data-filter={cat.slug}
-          class="feed-pill shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all sm:text-sm"
-        >
-          {cat.title}
-          {cat.count > 0 && <span class="ml-1 opacity-60">{cat.count}</span>}
-        </button>
-      ))}
+      {
+        categories.map((cat) => (
+          <button
+            data-filter={cat.slug}
+            class="feed-pill shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all sm:text-sm"
+          >
+            {cat.title}
+            {cat.count > 0 && <span class="ml-1 opacity-60">{cat.count}</span>}
+          </button>
+        ))
+      }
     </div>
   </div>
 
   <!-- Feed -->
-  <div class="space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
-    {sorted.map((entry) => (
-      <ArticleFeedCard entry={entry} />
-    ))}
+  <div class="divide-y divide-slate-100 dark:divide-slate-800">
+    {sorted.map((entry) => <ArticleCard entry={entry} simple />)}
   </div>
 
-  {totalCount === 0 && (
-    <p class="py-12 text-center text-sm text-slate-400 dark:text-slate-500">
-      还没有知识内容
-    </p>
-  )}
+  {
+    totalCount === 0 && (
+      <p class="py-12 text-center text-sm text-slate-400 dark:text-slate-500">还没有知识内容</p>
+    )
+  }
 
   <!-- Collapsible Category List -->
-  {categories.length > 0 && (
-    <div class="mt-10 border-t border-slate-100 pt-6 dark:border-slate-800">
-      <button
-        id="cat-toggle"
-        class="flex w-full items-center justify-between text-sm font-medium text-slate-600 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
-      >
-        <span>全部分类 · {totalCount} 篇</span>
-        <svg
-          id="cat-arrow"
-          class="h-4 w-4 transition-transform duration-200"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        ><path d="m6 9 6 6 6-6"/></svg>
-      </button>
-      <div id="cat-list" class="mt-3 hidden space-y-0.5">
-        {categories.map((cat) => (
-          <a
-            href={'/knowledge/' + cat.slug}
-            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-blue-400"
+  {
+    categories.length > 0 && (
+      <div class="mt-10 border-t border-slate-100 pt-6 dark:border-slate-800">
+        <button
+          id="cat-toggle"
+          class="flex w-full items-center justify-between text-sm font-medium text-slate-600 transition-colors hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+        >
+          <span>全部分类 · {totalCount} 篇</span>
+          <svg
+            id="cat-arrow"
+            class="h-4 w-4 transition-transform duration-200"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
           >
-            <span class="flex h-7 w-7 items-center justify-center rounded-md bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-blue-400"
-              ><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg
-            ></span>
-            <span class="flex-1 font-medium">{cat.title}</span>
-            <span class="text-xs text-slate-400 dark:text-slate-500">{cat.count} 篇</span>
-            <svg class="h-4 w-4 text-slate-300 dark:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
-        ))}
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        <div id="cat-list" class="mt-3 hidden space-y-0.5">
+          {categories.map((cat) => (
+            <a
+              href={'/knowledge/' + cat.slug}
+              class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 no-underline transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-blue-400"
+            >
+              <span class="flex h-7 w-7 items-center justify-center rounded-md bg-brand-50 text-brand-600 dark:bg-slate-700 dark:text-blue-400">
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="4" y="2" width="16" height="20" rx="2" />
+                  <path d="M9 22v-4h6v4" />
+                  <path d="M8 6h.01" />
+                  <path d="M16 6h.01" />
+                  <path d="M12 6h.01" />
+                  <path d="M12 10h.01" />
+                  <path d="M12 14h.01" />
+                  <path d="M16 10h.01" />
+                  <path d="M16 14h.01" />
+                  <path d="M8 10h.01" />
+                  <path d="M8 14h.01" />
+                </svg>
+              </span>
+              <span class="flex-1 font-medium">{cat.title}</span>
+              <span class="text-xs text-slate-400 dark:text-slate-500">{cat.count} 篇</span>
+              <svg
+                class="h-4 w-4 text-slate-300 dark:text-slate-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </a>
+          ))}
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 </section>
 
 <script>
   // ── Pill filtering ──
-  const pills = document.querySelectorAll<HTMLButtonElement>('.feed-pill');
-  const cards = document.querySelectorAll<HTMLElement>('.feed-card');
+  const pills = document.querySelectorAll('.feed-pill') as NodeListOf<HTMLButtonElement>;
+  const rows = document.querySelectorAll('[data-category]') as NodeListOf<HTMLElement>;
+  const pillsContainer = document.querySelector('.feed-pills .flex') as HTMLElement;
+
+  function removeActiveTagPill() {
+    const activeTagPill = document.getElementById('active-tag-pill');
+    if (activeTagPill) activeTagPill.remove();
+  }
 
   pills.forEach((pill) => {
     pill.addEventListener('click', () => {
       const filter = pill.dataset.filter ?? 'all';
 
-      // Update active pill
+      // Clear tag filter if category pill clicked
+      removeActiveTagPill();
+
       pills.forEach((p) => p.classList.remove('active'));
       pill.classList.add('active');
 
-      // Filter cards
-      cards.forEach((card) => {
-        if (filter === 'all' || card.dataset.category === filter) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
+      rows.forEach((row) => {
+        row.style.display = filter === 'all' || row.dataset.category === filter ? '' : 'none';
       });
     });
+  });
+
+  // ── Tag filtering via delegation ──
+  function filterByTag(tag: string) {
+    // 1. Set all standard pills to inactive
+    pills.forEach((p) => p.classList.remove('active'));
+
+    // 2. Manage dynamic active tag pill
+    let activeTagPill = document.getElementById('active-tag-pill') as HTMLButtonElement | null;
+    if (!activeTagPill && pillsContainer) {
+      activeTagPill = document.createElement('button');
+      activeTagPill.id = 'active-tag-pill';
+      activeTagPill.className =
+        'feed-pill active shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all sm:text-sm';
+      pillsContainer.appendChild(activeTagPill);
+
+      activeTagPill.addEventListener('click', () => {
+        const allPill = document.querySelector('[data-filter="all"]') as HTMLButtonElement;
+        allPill?.click();
+      });
+    }
+
+    if (activeTagPill) {
+      activeTagPill.textContent = `#${tag} ×`;
+      activeTagPill.dataset.tag = tag;
+    }
+
+    // 3. Filter rows based on tag matching
+    rows.forEach((row) => {
+      const tags = row.dataset.tags ? row.dataset.tags.split(',') : [];
+      row.style.display = tags.includes(tag) ? '' : 'none';
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const tagClickAttr = target.closest('[data-tag-click]') as HTMLElement | null;
+    if (tagClickAttr) {
+      e.preventDefault();
+      e.stopPropagation();
+      const tag = tagClickAttr.dataset.tagClick;
+      if (tag) {
+        filterByTag(tag);
+      }
+    }
   });
 
   // ── Category toggle ──
@@ -158,8 +213,13 @@ function accent(slug: string): string {
 
 <style is:global>
   /* Scrollbar hiding for pills */
-  .scrollbar-none::-webkit-scrollbar { display: none; }
-  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
   /* Pill styles */
   .feed-pill {
@@ -194,7 +254,19 @@ function accent(slug: string): string {
     background: #2563eb;
   }
 
-  /* Feed card dark mode border accent overrides */
-  .dark .feed-card { background: #1e293b60; }
-  .dark .feed-card:hover { background: #1e293b; }
+  /* Premium animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 </style>

@@ -4,11 +4,12 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import type { PageMeta } from '../types';
 
 export interface Props extends Partial<PageMeta> {
-  /** 首页/知识列表等宽页面使用 wider 布局 */
   wide?: boolean;
+  /** 当前文章标题，用于面包屑（避免全量加载） */
+  currentTitle?: string;
 }
 
-const { title = 'Keep', wide = false } = Astro.props as Props;
+const { title = 'Keep', wide = false, currentTitle } = Astro.props as Props;
 const siteTitle: string = title === 'Keep' ? 'Keep' : `${title} — Keep`;
 const isHome: boolean = Astro.url.pathname === '/';
 ---
@@ -34,6 +35,7 @@ const isHome: boolean = Astro.url.pathname === '/';
   <body class="min-h-screen flex flex-col transition-colors duration-200">
     <!-- Nav -->
     <header
+      data-pagefind-ignore
       class="sticky top-0 z-50 border-b border-slate-200 bg-[#F8FAFC]/80 backdrop-blur-md dark:border-slate-700 dark:bg-[#0F172A]/80"
     >
       <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
@@ -152,15 +154,18 @@ const isHome: boolean = Astro.url.pathname === '/';
     </header>
 
     <!-- Main -->
-    <main class:list={['mx-auto w-full flex-1 px-6 py-10 md:py-14', wide ? 'max-w-5xl' : 'max-w-3xl']}>
-      {!isHome && <Breadcrumbs path={Astro.url} />}
-      <article class:list={['prose', wide && 'max-w-none']}>
+    <main
+      class:list={['mx-auto w-full flex-1 px-6 py-10 md:py-14', wide ? 'max-w-5xl' : 'max-w-3xl']}
+    >
+      {!isHome && <Breadcrumbs path={Astro.url} currentTitle={currentTitle} />}
+      <article class:list={['prose', wide && 'max-w-none']} data-pagefind-body>
         <slot />
       </article>
     </main>
 
     <!-- Footer -->
     <footer
+      data-pagefind-ignore
       class="border-t border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-700 dark:text-slate-500"
     >
       <span>Knowledge Keep</span>

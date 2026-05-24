@@ -1,0 +1,222 @@
+---
+title: CSS :has() 选择器
+category: CSS 示例
+description: 理解 :has() 的原理、解决问题与核心优势，含卡片 hover、表单验证、前序兄弟元素三个实战案例
+tags: [CSS, 选择器, 布局, 交互, 表单]
+order: 2
+created: 2025-06-24
+---
+
+import CodeDemo from '../../../components/CodeDemo.astro';
+import './has-selector.css';
+
+## 理论
+
+`:has()` 是一个**关系型伪类（relational pseudo-class）**。它根据元素 **包含什么** 来选择该元素本身。
+
+`section:has(img)` — 会选择所有包含 `<img>` 的 `<section>`。
+
+选择器的"流向"打破了传统 CSS 的单向限制：
+
+- `parent:has(child)` — 子元素向上影响父级（CSS 首次实现向上选择）
+- `prev:has(~ next)` — 后续兄弟向前影响前序（实现前序兄弟选择器）
+
+### 语法
+
+`:has()` 的参数可以是任意选择器：标签、类、伪类、组合器，**支持多个条件**（或逻辑）和 **嵌套**。
+
+---
+
+## 解决了什么问题
+
+在 `:has()` 出现之前，CSS 存在两个单向限制：
+
+| 限制       | 说明                            | 过去需要                             |
+| ---------- | ------------------------------- | ------------------------------------ |
+| 只能向下选 | 父 → 子可以，子 → 父不行        | JavaScript `closest()` 或 class 切换 |
+| 只能向后选 | `~` 和 `+` 选后续兄弟，没法向前 | JS 遍历 DOM 加类                     |
+
+`:has()` 打破了这两个限制。
+
+---
+
+## 优势
+
+| 优势         | 说明                                                                 |
+| ------------ | -------------------------------------------------------------------- |
+| **零 JS**    | 纯 CSS 解决方案，无需事件监听                                        |
+| **响应式**   | 状态变化自动响应（hover、focus、invalid 等）                         |
+| **干净标记** | HTML 无需额外类或 data 属性                                          |
+| **高性能**   | 浏览器原生引擎处理，优于 JS 遍历操作                                 |
+| **可组合**   | 可与 `:focus`、`:invalid`、`:placeholder-shown`、`~`、`>` 等任意组合 |
+
+---
+
+## 案例一：卡片 Hover 联动（对比模式）
+
+**场景**：卡片内有一个按钮，hover 按钮时希望整个卡片高亮。
+
+**左侧** 是常规卡片，hover 按钮只影响按钮本身。**右侧** 使用 `:has()`，hover 按钮会联动整张卡片。
+
+<CodeDemo
+  code={`<div class="has-compare">
+  <div class="card-plain">
+    <span class="card-badge">普通卡片</span>
+    <h3>不使用 :has()</h3>
+    <p>hover 按钮时，卡片无变化</p>
+    <button class="demo-btn">Hover 我</button>
+  </div>
+  <div class="card-has">
+    <span class="card-badge card-badge--has">:has() 卡片</span>
+    <h3>使用 :has()</h3>
+    <p>hover 按钮，整张卡片高亮</p>
+    <button class="demo-btn">Hover 我</button>
+  </div>
+</div>`}
+  lang="html"
+>
+  <div class="has-compare">
+    <div class="card-plain">
+      <span class="card-badge">普通卡片</span>
+      <h3>不使用 :has()</h3>
+      <p>hover 按钮时，卡片无变化</p>
+      <button class="demo-btn">Hover 我</button>
+    </div>
+    <div class="card-has">
+      <span class="card-badge card-badge--has">:has() 卡片</span>
+      <h3>使用 :has()</h3>
+      <p>hover 按钮，整张卡片高亮</p>
+      <button class="demo-btn">Hover 我</button>
+    </div>
+  </div>
+</CodeDemo>
+
+关键 CSS 只有一行：
+
+`card-has:has(.demo-btn:hover)` — hover 按钮时卡片加边框、阴影、上移。
+
+换成 JS 实现需要：querySelectorAll → addEventListener → closest → class 切换。`:has()` 一行 CSS 完成。
+
+---
+
+## 案例二：表单验证样式（分步构建）
+
+**场景**：表单字段根据输入状态自动改变样式 — 聚焦高亮、验证通过／失败。
+
+### Step 1：聚焦高亮
+
+当 input 获得焦点时，整个字段区域高亮：
+
+<CodeDemo
+  code={`/* 聚焦时：蓝色边框 + 蓝色标签 */
+.form-field:has(input:focus) {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+.form-field:has(input:focus) label {
+  color: #2563eb;
+}`}
+  lang="css"
+>
+  <div class="has-form">
+    <div class="form-field">
+      <label>用户名</label>
+      <input type="text" placeholder="点击此处试试" />
+    </div>
+    <div class="form-field">
+      <label>邮箱</label>
+      <input type="email" placeholder="name@example.com" />
+    </div>
+  </div>
+</CodeDemo>
+
+### Step 2：加入验证状态
+
+加入 `:invalid`、`:valid` 和 `:placeholder-shown` 的组合，区分"未输入"和"输入无效"：
+
+<CodeDemo
+  code={`/* 无效输入 — 红框 + 红标签 */
+.form-field:has(input:invalid:not(:placeholder-shown)) {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+.form-field:has(input:invalid:not(:placeholder-shown))
+  .field-error { display: block; }
+
+/_ 有效输入 — 绿框 _/
+.form-field:has(input:valid:not(:placeholder-shown)) {
+border-color: #22c55e;
+background: #f0fdf4;
+}`}
+lang="css"
+
+>
+
+  <form class="has-form" onsubmit="return false">
+    <div class="form-field">
+      <label>邮箱</label>
+      <input type="email" placeholder="输入邮箱试试" required />
+      <span class="field-error">请输入有效的邮箱地址</span>
+    </div>
+    <div class="form-field">
+      <label>密码（至少 6 位）</label>
+      <input type="text" pattern=".{6,}" placeholder="输入密码试试" required />
+      <span class="field-error">密码不能少于 6 位</span>
+    </div>
+    <button class="form-submit" type="submit" disabled>提交（演示）</button>
+  </form>
+</CodeDemo>
+
+**试试**：在预览中点击输入框聚焦 → 输入无效值 → 再输入有效值，观察边框和标签颜色变化。
+
+整个表单验证逻辑完全由 CSS 驱动：
+
+- `:has(input:focus)` — 聚焦高亮
+- `:has(input:invalid:not(:placeholder-shown))` — 输入后无效
+- `:has(input:valid:not(:placeholder-shown))` — 输入后有效
+
+---
+
+## 案例三：前序兄弟元素
+
+**场景**：列表中 hover 某一项时，它前面的项自动淡出。
+
+<CodeDemo
+  code={`<ul class="has-siblings">
+  <li>第一项</li>
+  <li>第二项</li>
+  <li>第三项</li>
+  <li>第四项</li>
+  <li>第五项</li>
+</ul>`}
+  lang="html"
+>
+  <ul class="has-siblings">
+    <li>第一项</li>
+    <li>第二项</li>
+    <li>第三项</li>
+    <li>第四项</li>
+    <li>第五项</li>
+  </ul>
+</CodeDemo>
+
+核心 CSS：
+
+`li:has(~ li:hover)` — 如果某个 `li` 后面有 hover 状态的兄弟，则它本身变淡。
+
+`~` 选择后续兄弟，`:has(~ li:hover)` 检查"我后面有 hover 的 li 吗" → 我就是前面的项。
+
+**在 `:has()` 出现之前，纯 CSS 做不到这个效果。**
+
+---
+
+## 总结
+
+| 场景         | `:has()` 用法                       | 替代方案             |
+| ------------ | ----------------------------------- | -------------------- |
+| 父级样式驱动 | `parent:has(child:hover)`           | JS closest() + class |
+| 表单验证反馈 | `field:has(input:invalid)`          | JS addEventListener  |
+| 前序兄弟选择 | `li:has(~ li:hover)`                | 纯 CSS 无法实现      |
+| 容器内容检测 | `section:has(img)` vs `:has(video)` | JS DOM 遍历          |
+
+`:has()` 已获得所有现代浏览器支持（Chrome 105+ / Safari 15.4+ / Firefox 121+）。

@@ -19,24 +19,24 @@ const highlighted = await Promise.all(
     ),
   })),
 );
+
+const tabId = `cd-tab-${crypto.randomUUID()}`;
 ---
 
 <div
-  class="not-prose my-6 overflow-hidden rounded-xl border shadow-sm border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50"
+  data-cd={tabId}
+  class="cd not-prose my-6 overflow-hidden rounded-xl border shadow-sm border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50"
 >
   <!-- Preview -->
   <section>
     <div
-      class="flex items-center justify-between border-b px-4 py-2 border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80"
+      class="flex items-center justify-between border-b px-4 py-1.5 border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80"
     >
       <span
-        class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
+        class="flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
       >
         <svg
           class="h-3.5 w-3.5"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -49,56 +49,204 @@ const highlighted = await Promise.all(
         Preview
       </span>
     </div>
-    <div class="flex min-h-[120px] items-center justify-center p-6">
+    <div class="flex min-h-[100px] items-center justify-center p-5">
       <slot />
     </div>
   </section>
 
   <!-- Code -->
-  <section class="border-t border-slate-200 dark:border-slate-700">
+  <section class="cd-code-section border-t border-slate-200 dark:border-slate-700">
     <div
-      class="flex items-center gap-2 border-b px-4 py-2 border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80"
+      class="cd-code-header flex items-center justify-between border-b border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80"
     >
-      <span
-        class="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      >
-        <svg
-          class="h-3.5 w-3.5"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+      <div class="flex" role="tablist">
+        {
+          highlighted.map((f, i) => (
+            <button
+              role="tab"
+              aria-selected={i === 0}
+              class="cd-tab relative px-3.5 py-2 text-[0.75rem] font-medium transition-colors"
+              data-tab={tabId}
+              data-panel={`${tabId}-${i}`}
+            >
+              {f.name}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button
+          class="cd-collapse flex items-center gap-1 rounded-md px-2 py-1 text-[0.65rem] font-medium text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-700/60 dark:hover:text-slate-300"
+          data-collapse={tabId}
+          title="折叠代码"
         >
-          <path d="m4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"></path>
-          <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-          <path d="m5 12-3 3 3 3"></path>
-          <path d="m9 18 3-3-3-3"></path>
-        </svg>
-        Source
-      </span>
-      <span
-        class="rounded px-1.5 py-0.5 font-mono text-[0.65rem] bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-300"
-        >{lang}</span
-      >
+          <svg
+            class="cd-chevron h-3.5 w-3.5 transition-transform duration-200"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg
+          >
+        </button>
+        <button
+          class="cd-copy flex items-center gap-1 rounded-md px-2 py-1 text-[0.65rem] font-medium text-slate-400 opacity-0 transition-all hover:bg-slate-200/60 hover:text-slate-600 focus:opacity-100 dark:text-slate-500 dark:hover:bg-slate-700/60 dark:hover:text-slate-300"
+          data-copy={tabId}
+        >
+          <svg
+            class="h-3.5 w-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path
+              d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg
+          >
+          <span>Copy</span>
+        </button>
+      </div>
     </div>
-    <div class="max-h-96 overflow-auto">
+
+    <div class="cd-code-body max-h-96 overflow-auto transition-[max-height] duration-200">
       {
-        highlighted.map((file) => (
-          <details open>
-            {highlighted.length > 1 && (
-              <summary class="cursor-pointer border-b px-4 py-1.5 font-mono text-xs select-none transition-colors border-slate-100 bg-slate-50/50 text-slate-500 hover:bg-slate-100/50 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400 dark:hover:bg-slate-700/50">
-                {file.name}
-              </summary>
-            )}
-            <Fragment set:html={file.html} />
-          </details>
+        highlighted.map((f, i) => (
+          <div
+            role="tabpanel"
+            id={`${tabId}-${i}`}
+            class="cd-panel"
+            hidden={highlighted.length > 1 && i !== 0}
+          >
+            <div set:html={f.html} />
+          </div>
         ))
       }
     </div>
   </section>
 </div>
+
+<script define:vars={{ tabId }}>
+  const root = document.querySelector(`[data-cd="${tabId}"]`);
+  if (!root) return;
+
+  const tabs = root.querySelectorAll('.cd-tab');
+  const panels = root.querySelectorAll('.cd-panel');
+
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => {
+      for (const t of tabs) {
+        t.removeAttribute('data-active');
+        t.setAttribute('aria-selected', 'false');
+      }
+      for (const p of panels) p.hidden = true;
+
+      tab.dataset.active = '';
+      tab.setAttribute('aria-selected', 'true');
+      const panel = document.getElementById(tab.dataset.panel);
+      if (panel) panel.hidden = false;
+    });
+  }
+
+  const copyBtn = root.querySelector('.cd-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const activeTab = root.querySelector('.cd-tab[data-active]') ?? tabs[0];
+      if (!activeTab) return;
+
+      const panel = document.getElementById(activeTab.dataset.panel);
+      const text = panel?.querySelector('code')?.textContent ?? '';
+
+      try {
+        await navigator.clipboard.writeText(text);
+        const span = copyBtn.querySelector('span');
+        if (span) {
+          const orig = span.textContent;
+          span.textContent = 'Copied!';
+          setTimeout(() => {
+            span.textContent = orig;
+          }, 1500);
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
+  const collapseBtn = root.querySelector('.cd-collapse');
+  const codeBody = root.querySelector('.cd-code-body');
+  const chevron = root.querySelector('.cd-chevron');
+
+  collapseBtn?.addEventListener('click', () => {
+    const collapsed = codeBody?.classList.toggle('cd-code-body--collapsed');
+    if (chevron) {
+      chevron.style.transform = collapsed ? 'rotate(-90deg)' : '';
+    }
+  });
+
+  function showCopy(show) {
+    if (copyBtn) copyBtn.style.opacity = show ? '1' : '0';
+  }
+
+  root.addEventListener('mouseenter', () => showCopy(true));
+  root.addEventListener('mouseleave', () => showCopy(false));
+  root.addEventListener('focusin', () => showCopy(true));
+  root.addEventListener('focusout', () => showCopy(false));
+</script>
+
+<style>
+  /* Tab styling */
+  .cd-tab {
+    color: #64748b;
+    background: transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    border: none;
+    font-family: inherit;
+    position: relative;
+  }
+  .cd-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    border-radius: 1px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+  .cd-tab:hover {
+    color: #2563eb;
+  }
+  .cd-tab[data-active],
+  .cd-tab[aria-selected='true'] {
+    color: #2563eb;
+  }
+  .cd-tab[data-active]::after,
+  .cd-tab[aria-selected='true']::after {
+    background: #2563eb;
+  }
+  .dark .cd-tab {
+    color: #94a3b8;
+  }
+  .dark .cd-tab:hover,
+  .dark .cd-tab[data-active],
+  .dark .cd-tab[aria-selected='true'] {
+    color: #60a5fa;
+  }
+  .dark .cd-tab[data-active]::after,
+  .dark .cd-tab[aria-selected='true']::after {
+    background: #60a5fa;
+  }
+
+  /* Collapse state */
+  .cd-code-body--collapsed {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+</style>

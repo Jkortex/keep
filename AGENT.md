@@ -6,18 +6,18 @@
 
 ## Tech Stack
 
-| 层 | 技术 |
-|---|---|
-| 框架 | Astro 6 (SSG) |
-| 内容 | MDX via Astro Content Collections |
-| 样式 | Tailwind CSS v4 (`@tailwindcss/vite`) |
-| 类型 | TypeScript 6 (strict) |
-| 包管理 | pnpm 11 |
-| 格式化 | Prettier 3 + `prettier-plugin-astro` |
-| 搜索 | Pagefind (构建时索引) |
-| 代码高亮 | Shiki 4 |
-| Sitemap | `@astrojs/sitemap` |
-| 部署 | Vercel (自动) |
+| 层       | 技术                                  |
+| -------- | ------------------------------------- |
+| 框架     | Astro 6 (SSG)                         |
+| 内容     | MDX via Astro Content Collections     |
+| 样式     | Tailwind CSS v4 (`@tailwindcss/vite`) |
+| 类型     | TypeScript 6 (strict)                 |
+| 包管理   | pnpm 11                               |
+| 格式化   | Prettier 3 + `prettier-plugin-astro`  |
+| 搜索     | Pagefind (构建时索引)                 |
+| 代码高亮 | Shiki 4                               |
+| Sitemap  | `@astrojs/sitemap`                    |
+| 部署     | Vercel (自动)                         |
 
 ## Architecture
 
@@ -147,9 +147,11 @@ mkdir src/content/knowledge/<分类目录>
 ## Design System
 
 ### 风格
+
 Minimalism & Swiss Style — 洁净、留白、功能主义、无装饰。
 
 ### 颜色
+
 ```
 Primary     #475569  (slate-600)
 Accent      #2563EB  (blue-600)
@@ -157,13 +159,16 @@ Background  #F8FAFC  (slate-50)
 Foreground  #1E293B  (slate-800)
 Border      #E2E8F0  (slate-200)
 ```
+
 暗色模式自动切换，通过 `.dark` class 控制。
 
 ### 字体
+
 - Body: `IBM Plex Sans` (Google Fonts)
 - Code: `JetBrains Mono` (Google Fonts)
 
 ### 图标
+
 使用 **Lucide** SVG 图标，禁止使用 emoji 作为结构性图标。
 分类图标映射在 `src/components/CategoryCardGrid.astro` 的 `CATEGORY_ICONS` 中维护。
 
@@ -181,6 +186,7 @@ pnpm format:check    # 格式化检查 (CI)
 ## Conventions
 
 ### 代码风格
+
 - 分号: `semi: true`
 - 引号: `singleQuote: true`
 - 尾逗号: `trailingComma: all`
@@ -188,17 +194,20 @@ pnpm format:check    # 格式化检查 (CI)
 - 行宽: 100 chars
 
 ### TypeScript
+
 - `tsconfig.json` extends `astro/tsconfigs/strict`
 - 共享类型定义在 `src/types.ts`
 - Layout Props 使用 `extends Partial<PageMeta>`
 - 组件 Props 使用 interface + `Astro.props as Props` 模式
 
 ### 命名
+
 - 组件: PascalCase
 - 文件/目录: kebab-case
 - 类型: PascalCase
 
 ### 样式
+
 - Tailwind utility classes 优先
 - 全局 prose 样式在 `app.css` 中定义
 - 自定义 CSS 使用 `@theme` tokens (`bg-brand-50`, `text-brand-600`)

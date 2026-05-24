@@ -11,5 +11,8 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     assetsInclude: ['**/*.tsx'],
+    ssr: {
+      noExternal: ['style-to-js', 'hast-util-to-estree'],
+    },
   },
 });

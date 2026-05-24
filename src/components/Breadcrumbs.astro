@@ -1,37 +1,22 @@
 ---
-/** 根据当前路径自动生成面包屑导航 */
-import { getCollection } from 'astro:content';
+import * as k from '../lib/knowledge';
 
 export interface Props {
   path: URL;
+  /** 当前文章标题（文章详情页传入，避免全量加载） */
+  currentTitle?: string;
 }
 
-const { path } = Astro.props as Props;
+const { path, currentTitle } = Astro.props as Props;
 const segments = path.pathname.replace(/\/$/, '').split('/').filter(Boolean);
 
-// Load all articles to build categorySlug → displayName mapping
-const articles = await getCollection('knowledge');
-const categoryLabels: Record<string, string> = {};
-for (const article of articles) {
-  const catSlug = article.id.split('/')[0];
-  if (!categoryLabels[catSlug]) {
-    categoryLabels[catSlug] = article.data.category;
-  }
-}
-
-// Build article slug → title mapping
-const articleLabels: Record<string, string> = {};
-for (const article of articles) {
-  articleLabels[article.id] = article.data.title;
-}
-
-// Fixed labels for top-level paths
 const fixedLabels: Record<string, string> = {
   knowledge: '所有知识',
 };
 
-function getLabel(seg: string): string {
-  return fixedLabels[seg] ?? categoryLabels[seg] ?? decodeURIComponent(seg.replace(/-/g, ' '));
+function getLabel(seg: string, i: number): string {
+  if (i === segments.length - 1 && currentTitle) return currentTitle;
+  return fixedLabels[seg] ?? k.getCategoryLabel(seg);
 }
 ---
 
@@ -61,7 +46,7 @@ function getLabel(seg: string): string {
   {
     segments.map((seg, i) => {
       const href = '/' + segments.slice(0, i + 1).join('/');
-      const label = getLabel(seg);
+      const label = getLabel(seg, i);
       const isLast = i === segments.length - 1;
       return (
         <>
