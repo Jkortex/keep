@@ -1,13 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
 import * as k from '../lib/knowledge';
 
-const articles = await getCollection('knowledge');
-
-const categories = k.getCategories(articles);
-const sorted = k.sortByCreated(articles);
-const totalCount = articles.length;
+const categories = await k.getCategoriesWithCounts();
+const sorted = await k.getLatestArticles();
+const totalCount = sorted.length;
 ---
 
 <section class="not-prose">
@@ -135,12 +132,29 @@ const totalCount = articles.length;
     if (activeTagPill) activeTagPill.remove();
   }
 
+  function clearTagQueryParam() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('tag')) {
+      url.searchParams.delete('tag');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+
+  function setTagQueryParam(tag: string) {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('tag') !== tag) {
+      url.searchParams.set('tag', tag);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+
   pills.forEach((pill) => {
     pill.addEventListener('click', () => {
       const filter = pill.dataset.filter ?? 'all';
 
       // Clear tag filter if category pill clicked
       removeActiveTagPill();
+      clearTagQueryParam();
 
       pills.forEach((p) => p.classList.remove('active'));
       pill.classList.add('active');
@@ -168,6 +182,7 @@ const totalCount = articles.length;
       activeTagPill.addEventListener('click', () => {
         const allPill = document.querySelector('[data-filter="all"]') as HTMLButtonElement;
         allPill?.click();
+        clearTagQueryParam();
       });
     }
 
@@ -181,20 +196,21 @@ const totalCount = articles.length;
       const tags = row.dataset.tags ? row.dataset.tags.split(',') : [];
       row.style.display = tags.includes(tag) ? '' : 'none';
     });
+
+    setTagQueryParam(tag);
   }
 
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const tagClickAttr = target.closest('[data-tag-click]') as HTMLElement | null;
-    if (tagClickAttr) {
-      e.preventDefault();
-      e.stopPropagation();
-      const tag = tagClickAttr.dataset.tagClick;
-      if (tag) {
-        filterByTag(tag);
-      }
-    }
-  });
+  // Register filter function globally for Layout.astro to call
+  (window as any).__filterByTag = filterByTag;
+
+  // On page load, auto-filter if tag param exists
+  const params = new URLSearchParams(window.location.search);
+  const tagParam = params.get('tag');
+  if (tagParam) {
+    setTimeout(() => {
+      filterByTag(tagParam);
+    }, 0);
+  }
 
   // ── Category toggle ──
   const catToggle = document.getElementById('cat-toggle');

@@ -1,14 +1,7 @@
 import type { HotkeyRuntime } from '../lib/hotkeys/types';
 import type { PaletteItem } from '../lib/palette';
 
-const COMMANDS: PaletteItem[] = [
-  { type: 'command', id: 'app.nav.home', title: '回到首页', category: '导航', keys: 'g h' },
-  { type: 'command', id: 'app.theme.toggle', title: '切换主题', category: '系统', keys: 't' },
-  { type: 'command', id: 'app.palette.open', title: '命令面板', category: '导航', keys: 'Ctrl+P' },
-  { type: 'command', id: 'app.search.open', title: '搜索页面', category: '导航', keys: '/' },
-  { type: 'command', id: 'app.help.toggle', title: '快捷键帮助', category: '系统', keys: '?' },
-];
-
+let COMMANDS: PaletteItem[] = [];
 let PAGES: PaletteItem[] = [];
 
 const rawData = document.getElementById('palette-pages-data')?.textContent;
@@ -57,6 +50,7 @@ export function filterPaletteItems(
     return pool.slice(0, 30);
   } else {
     const tokens = tokenize(trimmed);
+    let items: PaletteItem[];
 
     if (mode === 'command') {
       items = pool.filter((i) => {
@@ -69,9 +63,8 @@ export function filterPaletteItems(
         return tokens.every((t) => haystack.includes(t));
       });
     }
+    return items.slice(0, 30);
   }
-
-  return items.slice(0, 30);
 }
 
 export function parseQuery(
@@ -94,16 +87,48 @@ export function parseQuery(
   return { mode: 'all', categoryFilter: null, displayQuery: trimmed };
 }
 
+function formatKeysForDisplay(keys: string): string {
+  return keys
+    .split(/\s+/)
+    .map((stroke) =>
+      stroke
+        .split('+')
+        .map((part) => {
+          if (part === 'ctrl') return 'Ctrl';
+          if (part === 'shift') return 'Shift';
+          if (part === 'alt') return 'Alt';
+          if (part === 'meta') return 'Meta';
+          return part;
+        })
+        .join('+'),
+    )
+    .join(' ');
+}
+
 export function setupCommandPalette(runtime: HotkeyRuntime) {
-  const overlay = document.getElementById('command-palette-overlay');
-  const input = document.getElementById('palette-input') as HTMLInputElement | null;
-  const results = document.getElementById('palette-results');
-  const badge = document.getElementById('palette-mode-badge');
+  const overlay = document.getElementById('command-palette-overlay') as HTMLElement;
+  const input = document.getElementById('palette-input') as HTMLInputElement;
+  const results = document.getElementById('palette-results') as HTMLElement;
+  const badge = document.getElementById('palette-mode-badge') as HTMLElement;
   if (!overlay || !input || !results || !badge) return;
 
-  let activeIndex = -1;
+  // Initialize COMMANDS dynamically from hotkey runtime
+  const hotkeyCommands = runtime.getCommands();
+  const hotkeyBindings = runtime.getBindings();
 
-  const categoryNames: Record<string, string> = {};
+  COMMANDS = hotkeyCommands.map((cmd) => {
+    const binding = hotkeyBindings.find((b) => b.commandId === cmd.id);
+    const keysDisplay = binding ? formatKeysForDisplay(binding.keys) : undefined;
+    return {
+      type: 'command',
+      id: cmd.id,
+      title: cmd.title,
+      category: cmd.category ?? '系统',
+      keys: keysDisplay,
+    };
+  });
+
+  let activeIndex = -1;
 
   function getModeLabel(mode: string, filter: string | null): string {
     if (mode === 'command') return '命令';

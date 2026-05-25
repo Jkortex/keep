@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
 import * as k from '../lib/knowledge';
 
@@ -9,9 +8,7 @@ export interface Props {
 
 const { category } = Astro.props;
 
-const articles = await getCollection('knowledge', (entry) => entry.id.startsWith(category + '/'));
-
-const sorted = k.sortByOrder(articles);
+const sorted = await k.getArticlesByCategory(category);
 const title = k.getCategoryLabel(category);
 ---
 

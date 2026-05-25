@@ -1,12 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
 import * as k from '../lib/knowledge';
 
-const articles = await getCollection('knowledge');
-const sorted = k.sortByOrder(articles);
-const grouped = k.groupByCategory(sorted);
-const categories = k.getCategories(articles);
+const grouped = await k.getArticlesGroupedByCategory();
+const categories = await k.getCategoriesWithCounts();
 ---
 
 <section class="not-prose">
@@ -67,5 +64,5 @@ const categories = k.getCategories(articles);
     }
   </div>
 
-  {articles.length === 0 && <p class="text-sm text-slate-400 dark:text-slate-500">暂无内容</p>}
+  {categories.length === 0 && <p class="text-sm text-slate-400 dark:text-slate-500">暂无内容</p>}
 </section>

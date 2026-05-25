@@ -1,14 +1,15 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CategoryListing from '../../components/CategoryListing.astro';
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import * as k from '../../lib/knowledge';
 
 export async function getStaticPaths() {
-  const articles = await getCollection('knowledge');
+  const articles = await k.getArticles();
 
   // Unique category slugs from entry IDs
-  const categories = [...new Set(articles.map((a) => a.id.split('/')[0]))];
+  const categories = [...new Set(articles.map((a) => k.getCategorySlug(a)))];
 
   const paths: {
     params: { slug: string | undefined };
@@ -51,9 +52,7 @@ if (pageType === 'article' && entry) {
   headings = entryHeadings;
   title = entry.data.title;
 } else if (pageType === 'category' && category) {
-  // Get category display name from the first article in this category
-  const catArticles = await getCollection('knowledge', (e) => e.id.startsWith(category + '/'));
-  title = catArticles[0]?.data?.category ?? category;
+  title = k.getCategoryLabel(category);
 } else {
   title = '知识';
 }

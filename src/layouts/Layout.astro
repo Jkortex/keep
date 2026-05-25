@@ -119,28 +119,50 @@ const palettePages = allArticles.map((a) => ({
 
     <CommandPalette />
 
-    <script is:inline>
+    <script>
+      import * as theme from '../lib/theme';
+
       // ── Theme toggle ──
       const toggle = document.getElementById('theme-toggle');
       const sun = document.getElementById('sun-icon');
       const moon = document.getElementById('moon-icon');
 
-      function syncUI(isDark) {
+      function syncUI(currentTheme: 'light' | 'dark') {
+        const isDark = currentTheme === 'dark';
         sun?.classList.toggle('hidden', !isDark);
         moon?.classList.toggle('hidden', isDark);
       }
 
-      syncUI(document.documentElement.classList.contains('dark'));
+      // Subscribe to theme updates, which also runs syncUI immediately
+      theme.subscribe(syncUI);
 
       toggle?.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        syncUI(isDark);
+        theme.toggleTheme();
       });
 
       // ── Palette toggle button ──
       document.getElementById('palette-toggle')?.addEventListener('click', function () {
-        if (window.__openPalette) window.__openPalette('');
+        if ((window as any).__openPalette) (window as any).__openPalette('');
+      });
+
+      // ── Global Tag Click Handler ──
+      document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const tagClickAttr = target.closest('[data-tag-click]') as HTMLElement | null;
+        if (tagClickAttr) {
+          e.preventDefault();
+          e.stopPropagation();
+          const tag = tagClickAttr.dataset.tagClick;
+          if (!tag) return;
+
+          if (window.location.pathname === '/') {
+            if ((window as any).__filterByTag) {
+              (window as any).__filterByTag(tag);
+            }
+          } else {
+            window.location.href = '/?tag=' + encodeURIComponent(tag);
+          }
+        }
       });
     </script>
 

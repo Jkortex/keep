@@ -2,6 +2,7 @@ import { createHotkeyRuntime } from '../lib/hotkeys/runtime';
 import { KEEP_COMMANDS, KEEP_BINDINGS } from '../lib/hotkeys/commands';
 import type { HotkeyRuntime } from '../lib/hotkeys/types';
 import { setupCommandPalette } from './command-palette';
+import * as theme from '../lib/theme';
 
 const runtime: HotkeyRuntime = createHotkeyRuntime();
 runtime.registerCommands(KEEP_COMMANDS);
@@ -20,14 +21,13 @@ runtime.registerHandlers([
   {
     commandId: 'app.theme.toggle',
     run: () => {
-      const btn = document.getElementById('theme-toggle');
-      if (btn) btn.click();
+      theme.toggleTheme();
     },
   },
   {
     commandId: 'app.palette.open',
     run: () => {
-      if (window.__openPalette) window.__openPalette('');
+      if ((window as any).__openPalette) (window as any).__openPalette('');
     },
   },
   {

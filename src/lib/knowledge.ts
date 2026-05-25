@@ -1,10 +1,17 @@
+import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
-type Article = CollectionEntry<'knowledge'>;
+export type Article = CollectionEntry<'knowledge'>;
+
+export interface CategoryInfo {
+  slug: string;
+  title: string;
+  count: number;
+}
 
 /** 分类注册表 — 唯一事实源
  *
- * 新增分类必须同时在此注册，否则知识内容可以通过 URL 访问,
+ * 新增分类必须同时在此注册，否则知识内容可以通过 URL 访问，
  * 但不会出现在首页分类列表和分类概览页上。
  * order 控制分类的排列顺序。
  * title 将覆盖文章 frontmatter 中的 `category` 字段。 */
@@ -19,15 +26,19 @@ export const CATEGORIES = {
 
 export type CategorySlug = keyof typeof CATEGORIES;
 
+/** 从 Entry ID 提取分类 Slug */
 export function getCategorySlug(article: Article): string {
   return article.id.split('/')[0];
 }
 
+/** 获取分类的显示标题 */
 export function getCategoryLabel(slug: string): string {
   return CATEGORIES[slug as CategorySlug]?.title ?? slug;
 }
 
-export function getCategories(articles: Article[]) {
+/** 获取包含文章数量的已注册分类列表 */
+export async function getCategoriesWithCounts(): Promise<CategoryInfo[]> {
+  const articles = await getCollection('knowledge');
   const counts = new Map<string, number>();
   for (const a of articles) {
     const slug = getCategorySlug(a);
@@ -58,8 +69,27 @@ export function sortByCreated<T extends Article>(articles: T[]): T[] {
   });
 }
 
-/** 按分类分组，返回 slug → articles 映射 */
-export function groupByCategory(articles: Article[]): Map<string, Article[]> {
+/** 获取所有文章，按 order 升序排列 */
+export async function getArticles(): Promise<Article[]> {
+  const articles = await getCollection('knowledge');
+  return sortByOrder(articles);
+}
+
+/** 获取最新文章列表，按时间降序排列 */
+export async function getLatestArticles(): Promise<Article[]> {
+  const articles = await getCollection('knowledge');
+  return sortByCreated(articles);
+}
+
+/** 获取指定分类的文章，按 order 升序排列 */
+export async function getArticlesByCategory(categorySlug: string): Promise<Article[]> {
+  const articles = await getCollection('knowledge', (entry) => getCategorySlug(entry) === categorySlug);
+  return sortByOrder(articles);
+}
+
+/** 按分类分组获取所有文章（已排序） */
+export async function getArticlesGroupedByCategory(): Promise<Map<string, Article[]>> {
+  const articles = await getArticles();
   const map = new Map<string, Article[]>();
   for (const a of articles) {
     const slug = getCategorySlug(a);
