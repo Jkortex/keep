@@ -1,0 +1,39 @@
+---
+interface Props {
+  shortcuts: { keys: string; desc: string }[];
+}
+
+const { shortcuts } = Astro.props as Props;
+---
+
+<div
+  id="hotkey-help-overlay"
+  class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 backdrop-blur-sm"
+>
+  <div
+    class="mx-4 w-full max-w-md rounded-2xl border border-[#E5E7EB] bg-[#FAFAF8] p-6 shadow-2xl dark:border-[#374151] dark:bg-[#1F2937]"
+  >
+    <div class="mb-5 flex items-center justify-between">
+      <h2 class="text-[18px] font-semibold text-[#1A1A1A] dark:text-[#F3F4F6]">快捷键</h2>
+      <button
+        id="hotkey-help-close"
+        class="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors duration-200 hover:bg-[#F3F4F6] hover:text-[#1A1A1A] dark:hover:bg-[#374151] dark:hover:text-[#F3F4F6]"
+        aria-label="关闭"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="space-y-1">
+      {shortcuts.map(({ keys, desc }) => (
+        <div class="flex items-center justify-between rounded-lg px-3 py-2 transition-colors duration-200 hover:bg-[#F3F4F6] dark:hover:bg-[#374151]">
+          <span class="text-[14px] text-[#4B5563] dark:text-[#D1D5DB]">{desc}</span>
+          <kbd class="inline-flex items-center gap-0.5 rounded-md border border-[#E5E7EB] bg-white px-2 py-0.5 font-mono text-[12px] font-medium text-[#6B7280] dark:border-[#4B5563] dark:bg-[#111827] dark:text-[#9CA3AF]">
+            {keys}
+          </kbd>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<div
+  id="command-palette-overlay"
+  class="fixed inset-0 z-[150] hidden items-start justify-center pt-[12vh] bg-black/30 backdrop-blur-sm"
+>
+  <div
+    class="mx-4 w-full max-w-2xl rounded-2xl border border-[#E5E7EB] bg-[#FAFAF8] shadow-2xl dark:border-[#374151] dark:bg-[#1F2937] overflow-hidden"
+  >
+    <!-- Input -->
+    <div class="flex items-center gap-3 border-b border-[#E5E7EB] px-5 py-3 dark:border-[#374151]">
+      <svg class="h-4 w-4 shrink-0 text-[#9CA3AF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+      </svg>
+      <input
+        id="palette-input"
+        type="text"
+        placeholder="输入搜索文章、> 命令、@ 分类…"
+        class="w-full border-0 bg-transparent text-[15px] text-[#1A1A1A] outline-none placeholder:text-[#9CA3AF] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280]"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <span id="palette-mode-badge" class="hidden rounded-md bg-[#059669]/10 px-2 py-0.5 text-[11px] font-medium text-[#059669] dark:bg-[#34D399]/10 dark:text-[#34D399]"></span>
+    </div>
+
+    <!-- Results -->
+    <div id="palette-results" class="max-h-[50vh] overflow-y-auto py-2">
+      <div class="px-5 py-8 text-center text-[13px] text-[#9CA3AF] dark:text-[#6B7280]">
+        输入搜索文章，或输入 <kbd class="mx-0.5 rounded border border-[#E5E7EB] bg-white px-1.5 py-0.5 font-mono text-[11px] dark:border-[#4B5563] dark:bg-[#111827]">&gt;</kbd> 搜索命令，<kbd class="mx-0.5 rounded border border-[#E5E7EB] bg-white px-1.5 py-0.5 font-mono text-[11px] dark:border-[#4B5563] dark:bg-[#111827]">@</kbd> 过滤分类
+      </div>
+    </div>
+  </div>
+</div>

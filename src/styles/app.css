@@ -1,37 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
+
+/* ── HarmonyOS Sans (self-hosted) ── */
+@font-face {
+  font-family: 'HarmonyOS Sans';
+  src: url('/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'HarmonyOS Sans';
+  src: url('/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'HarmonyOS Sans';
+  src: url('/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'HarmonyOS Sans';
+  src: url('/fonts/harmonyos-sans/HarmonyOS_Sans_SC_Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ── Class-based dark mode ── */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Design Tokens (Minimalism & Swiss Style) ── */
 @theme {
-  /* Light mode tokens (default) */
-  --color-primary: #475569;
+  /* Light mode tokens — Paper-white + Vibrant Pink accent */
+  --color-primary: #1A1A1A;
   --color-on-primary: #ffffff;
-  --color-secondary: #64748b;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-light: #eff6ff;
-  --color-background: #f8fafc;
-  --color-foreground: #1e293b;
-  --color-muted: #eaeff3;
-  --color-border: #e2e8f0;
-  --color-destructive: #dc2626;
+  --color-secondary: #4B5563;
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+  --color-accent-light: #ECFDF5;
+  --color-background: #FAFAF8;
+  --color-foreground: #1A1A1A;
+  --color-muted: #F3F4F6;
+  --color-border: #E5E7EB;
+  --color-destructive: #EF4444;
 
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-200: #bfdbfe;
-  --color-brand-300: #93c5fd;
-  --color-brand-400: #60a5fa;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-800: #1e40af;
-  --color-brand-900: #1e3a8a;
+  --color-brand-50: #ECFDF5;
+  --color-brand-100: #D1FAE5;
+  --color-brand-200: #A7F3D0;
+  --color-brand-300: #6EE7B7;
+  --color-brand-400: #34D399;
+  --color-brand-500: #10B981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065F46;
+  --color-brand-900: #064E3B;
 
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'HarmonyOS Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-heading: 'HarmonyOS Sans', 'Noto Serif SC', Georgia, 'STSong', serif;
+  --font-mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
 }
 
 /* ── Base ── */
@@ -45,39 +75,39 @@ body {
 
 /* ── Prose styles ── */
 .prose {
-  max-width: 65ch;
+  font-size: 1.0625rem;
   line-height: 1.8;
 
   /* Light mode colors */
-  --prose-text: #334155;
+  --prose-text: #374151;
   --prose-heading: var(--color-foreground);
   --prose-link: var(--color-accent);
   --prose-link-hover: var(--color-accent-hover);
-  --prose-code-bg: #f1f5f9;
-  --prose-code-color: #be123c;
-  --prose-blockquote-bg: #f8fafc;
-  --prose-blockquote-color: #475569;
+  --prose-code-bg: #F3F4F6;
+  --prose-code-color: #B45309;
+  --prose-blockquote-bg: #FAFAF8;
+  --prose-blockquote-color: #4B5563;
   --prose-blockquote-border: var(--color-accent);
-  --prose-th-bg: #f8fafc;
-  --prose-td-color: #334155;
-  --prose-tr-alt: #fafaf9;
+  --prose-th-bg: #FAFAF8;
+  --prose-td-color: #374151;
+  --prose-tr-alt: #FAFAF9;
   --prose-border: var(--color-border);
 }
 
 .dark .prose {
-  --prose-text: #cbd5e1;
-  --prose-heading: #f1f5f9;
-  --prose-link: #60a5fa;
-  --prose-link-hover: #93c5fd;
-  --prose-code-bg: #334155;
-  --prose-code-color: #fda4af;
-  --prose-blockquote-bg: #1e293b;
-  --prose-blockquote-color: #94a3b8;
-  --prose-blockquote-border: #60a5fa;
-  --prose-th-bg: #1e293b;
-  --prose-td-color: #cbd5e1;
-  --prose-tr-alt: #1e293b;
-  --prose-border: #334155;
+  --prose-text: #D1D5DB;
+  --prose-heading: #F3F4F6;
+  --prose-link: #34D399;
+  --prose-link-hover: #6EE7B7;
+  --prose-code-bg: #374151;
+  --prose-code-color: #FBBF24;
+  --prose-blockquote-bg: #1F2937;
+  --prose-blockquote-color: #9CA3AF;
+  --prose-blockquote-border: #059669;
+  --prose-th-bg: #1F2937;
+  --prose-td-color: #D1D5DB;
+  --prose-tr-alt: #1F2937;
+  --prose-border: #374151;
 }
 
 .prose h1,
@@ -86,13 +116,13 @@ body {
   color: var(--prose-heading);
 }
 .prose h1 {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
   margin: 0 0 0.25rem;
   letter-spacing: -0.02em;
 }
 .prose h2 {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 2.5rem 0 0.75rem;
   letter-spacing: -0.01em;
@@ -100,7 +130,7 @@ body {
   border-bottom: 1px solid var(--prose-border);
 }
 .prose h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin: 1.75rem 0 0.5rem;
 }
@@ -133,7 +163,7 @@ body {
   padding: 1rem 1.25rem;
   border-radius: 10px;
   overflow-x: auto;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   line-height: 1.7;
   margin: 1.25rem 0;
 }
@@ -159,7 +189,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin: 1.25rem 0;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
 }
 .prose th {
   background: var(--prose-th-bg);
@@ -191,38 +221,8 @@ body {
   border-top: 1px solid var(--prose-border);
 }
 
-/* ── Theme toggle ── */
-.theme-toggle {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-.theme-toggle:hover {
-  background: #f1f5f9;
-  color: var(--color-foreground);
-}
-
-.dark .theme-toggle {
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-.dark .theme-toggle:hover {
-  background: #1e293b;
-  color: #f1f5f9;
-}
-
-/* ── Prevent FOUC ── */
+/* ── Prevent FOUC / Dark mode base ── */
 html.dark body {
-  background: #0f172a;
+  --color-foreground: #F3F4F6;
+  background: #111827;
 }
