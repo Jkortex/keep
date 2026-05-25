@@ -3,33 +3,48 @@ import Layout from '../../layouts/Layout.astro';
 import CategoryListing from '../../components/CategoryListing.astro';
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { sortByOrder } from '../../lib/knowledge';
 
 export async function getStaticPaths() {
-  const articles = await getCollection('knowledge');
+  const PER_PAGE = 20;
+  const allArticles = await getCollection('knowledge');
 
   // Unique category slugs from entry IDs
-  const categories = [...new Set(articles.map((a) => a.id.split('/')[0]))];
+  const categories = [...new Set(allArticles.map((a) => a.id.split('/')[0]))];
 
   const paths: {
     params: { slug: string | undefined };
-    props: {
-      pageType: 'category' | 'article';
-      category?: string;
-      entry?: CollectionEntry<'knowledge'>;
-    };
+    props: Record<string, unknown>;
   }[] = [];
 
-  // Category listing pages: /knowledge/principles, /knowledge/css, etc.
+  // Category listing pages with pagination: /knowledge/principles, /knowledge/principles/2, etc.
   for (const cat of categories) {
-    paths.push({
-      params: { slug: cat },
-      props: { pageType: 'category', category: cat },
-    });
+    const catArticles = allArticles.filter((a) => a.id.startsWith(cat + '/'));
+    if (catArticles.length === 0) continue;
+
+    const sorted = sortByOrder(catArticles);
+    const totalPages = Math.ceil(sorted.length / PER_PAGE);
+
+    for (let page = 1; page <= totalPages; page++) {
+      const start = (page - 1) * PER_PAGE;
+      const end = start + PER_PAGE;
+      const pageArticles = sorted.slice(start, end);
+
+      paths.push({
+        params: { slug: page === 1 ? cat : `${cat}/${page}` },
+        props: {
+          pageType: 'category',
+          category: cat,
+          pageArticles,
+          currentPage: page,
+          totalPages,
+        },
+      });
+    }
   }
 
   // Article pages: /knowledge/principles/cap-theorem, etc.
-  // Slug is the full entry ID path, e.g., "principles/cap-theorem"
-  for (const article of articles) {
+  for (const article of allArticles) {
     paths.push({
       params: { slug: article.id },
       props: { pageType: 'article', entry: article },
@@ -40,6 +55,9 @@ export async function getStaticPaths() {
 }
 
 const { pageType, category, entry } = Astro.props;
+const pageArticles = 'pageArticles' in Astro.props ? (Astro.props as any).pageArticles : undefined;
+const currentPage = 'currentPage' in Astro.props ? (Astro.props as any).currentPage : 1;
+const totalPages = 'totalPages' in Astro.props ? (Astro.props as any).totalPages : 1;
 
 let ArticleContent: any;
 let title: string;
@@ -62,16 +80,21 @@ if (pageType === 'article' && entry) {
 <Layout
   title={title}
   currentTitle={pageType === 'article' ? entry?.data.title : undefined}
-  wide={pageType === 'article'}
+  wide
 >
   {
     pageType === 'category' && category ? (
-      <CategoryListing category={category} />
+      <CategoryListing
+        category={category}
+        articles={pageArticles}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
     ) : (
       ArticleContent &&
       entry && (
-        <div class="lg:grid lg:grid-cols-4 lg:gap-8 items-start">
-          <div class="lg:col-span-3 min-w-0">
+        <div class="lg:grid lg:grid-cols-[1fr_auto] lg:gap-10 items-start">
+          <div class="min-w-0">
             <header class="mb-8 border-b border-slate-100 pb-6 dark:border-slate-800 not-prose">
               <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 {entry.data.title}
@@ -141,7 +164,7 @@ if (pageType === 'article' && entry) {
           </div>
 
           {headings && headings.length > 0 && (
-            <aside class="hidden lg:block lg:col-span-1 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-slate-200 dark:border-slate-800 not-prose">
+            <aside class="hidden lg:block w-56 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-slate-200 dark:border-slate-800 not-prose">
               <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
                 目录
               </h2>
@@ -152,7 +175,7 @@ if (pageType === 'article' && entry) {
                     <a
                       href={`#${h.slug}`}
                       class:list={[
-                        'block text-xs text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors leading-relaxed no-underline',
+                        'block text-xs text-slate-500 hover:text-[#059669] dark:text-slate-400 dark:hover:text-[#34D399] transition-colors leading-relaxed no-underline',
                         h.depth === 3 ? 'pl-3' : 'font-medium',
                       ]}
                       data-toc-link={h.slug}
@@ -209,8 +232,8 @@ if (pageType === 'article' && entry) {
         links.forEach((link) => {
           const linkHtml = link as HTMLElement;
           const isActive = linkHtml.dataset.tocLink === activeId;
-          linkHtml.classList.toggle('text-blue-600', isActive);
-          linkHtml.classList.toggle('dark:text-blue-400', isActive);
+          linkHtml.classList.toggle('text-[#059669]', isActive);
+          linkHtml.classList.toggle('dark:text-[#34D399]', isActive);
           linkHtml.classList.toggle('font-semibold', isActive);
           linkHtml.classList.toggle('text-slate-500', !isActive);
           linkHtml.classList.toggle('dark:text-slate-400', !isActive);
