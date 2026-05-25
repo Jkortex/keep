@@ -53,10 +53,14 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { pageType, category, entry } = Astro.props;
-const pageArticles = 'pageArticles' in Astro.props ? (Astro.props as any).pageArticles : undefined;
-const currentPage = 'currentPage' in Astro.props ? (Astro.props as any).currentPage : 1;
-const totalPages = 'totalPages' in Astro.props ? (Astro.props as any).totalPages : 1;
+const {
+  pageType,
+  category,
+  entry,
+  pageArticles = [],
+  currentPage = 1,
+  totalPages = 1,
+} = Astro.props as any;
 
 let ArticleContent: any;
 let title: string;
