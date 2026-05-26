@@ -25,14 +25,22 @@ runtime.registerHandlers([
     },
   },
   {
+    commandId: 'app.search.open',
+    run: () => {
+      if (window.location.pathname === '/search') {
+        const input = document.getElementById('search-input') as HTMLInputElement | null;
+        input?.focus();
+        input?.select();
+      } else {
+        window.location.href = '/search';
+      }
+    },
+  },
+  {
     commandId: 'app.palette.open',
     run: () => {
       if ((window as any).__openPalette) (window as any).__openPalette('');
     },
-  },
-  {
-    commandId: 'app.search.open',
-    run: () => { window.location.href = '/search'; },
   },
   {
     commandId: 'app.help.toggle',

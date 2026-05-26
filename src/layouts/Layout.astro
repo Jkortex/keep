@@ -119,51 +119,22 @@ const palettePages = allArticles.map((a) => ({
 
     <CommandPalette />
 
+    <!-- Back to top button -->
+    <button
+      id="back-to-top"
+      class="fixed right-4 bottom-4 z-40 hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#6B7280] shadow-lg transition-all duration-200 hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]"
+      style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+      aria-label="回到顶部"
+      title="回到顶部"
+    >
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+
     <script>
-      import * as theme from '../lib/theme';
-
-      // ── Theme toggle ──
-      const toggle = document.getElementById('theme-toggle');
-      const sun = document.getElementById('sun-icon');
-      const moon = document.getElementById('moon-icon');
-
-      function syncUI(currentTheme: 'light' | 'dark') {
-        const isDark = currentTheme === 'dark';
-        sun?.classList.toggle('hidden', !isDark);
-        moon?.classList.toggle('hidden', isDark);
-      }
-
-      // Subscribe to theme updates, which also runs syncUI immediately
-      theme.subscribe(syncUI);
-
-      toggle?.addEventListener('click', () => {
-        theme.toggleTheme();
-      });
-
-      // ── Palette toggle button ──
-      document.getElementById('palette-toggle')?.addEventListener('click', function () {
-        if ((window as any).__openPalette) (window as any).__openPalette('');
-      });
-
-      // ── Global Tag Click Handler ──
-      document.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        const tagClickAttr = target.closest('[data-tag-click]') as HTMLElement | null;
-        if (tagClickAttr) {
-          e.preventDefault();
-          e.stopPropagation();
-          const tag = tagClickAttr.dataset.tagClick;
-          if (!tag) return;
-
-          if (window.location.pathname === '/') {
-            if ((window as any).__filterByTag) {
-              (window as any).__filterByTag(tag);
-            }
-          } else {
-            window.location.href = '/?tag=' + encodeURIComponent(tag);
-          }
-        }
-      });
+      import { setupLayout } from '../scripts/layout';
+      setupLayout();
     </script>
 
     <script src="../scripts/hotkeys-init.ts"></script>

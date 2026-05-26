@@ -28,88 +28,13 @@ import Layout from '../layouts/Layout.astro';
           class="w-full rounded-xl border border-[#E5E7EB] bg-white py-3 pl-10 pr-4 text-[15px] text-[#1A1A1A] placeholder:text-[#9CA3AF] focus:border-[#059669] focus:outline-none focus:ring-2 focus:ring-[#ECFDF5] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#F3F4F6] dark:placeholder:text-[#6B7280] dark:focus:border-[#059669] dark:focus:ring-[rgba(5,150,105,0.2)]"
         />
       </div>
-      <div id="search-results" class="mt-6"></div>
+      <div id="search-count" class="mt-4 text-[13px] text-[#9CA3AF] dark:text-[#6B7280]"></div>
+      <div id="search-results" class="mt-2"></div>
     </div>
   </section>
 
-  <script is:inline>
-    let pagefind = null;
-
-    async function getPagefind() {
-      if (pagefind) return pagefind;
-      try {
-        pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js');
-      } catch {
-        pagefind = { search: async () => ({ results: [] }) };
-      }
-      return pagefind;
-    }
-
-    const input = document.getElementById('search-input');
-    const results = document.getElementById('search-results');
-    let activeIndex = -1;
-    let resultLinks = [];
-
-    function updateActiveItem() {
-      const items = results?.querySelectorAll('a');
-      resultLinks = items ? [...items] : [];
-      resultLinks.forEach((el, i) => {
-        if (i === activeIndex) {
-          el.classList.add('ring-2', 'ring-[#059669]', 'dark:ring-[#34D399]');
-          el.scrollIntoView({ block: 'nearest' });
-        } else {
-          el.classList.remove('ring-2', 'ring-[#059669]', 'dark:ring-[#34D399]');
-        }
-      });
-    }
-
-    let debounceTimer;
-    input?.addEventListener('input', () => {
-      clearTimeout(debounceTimer);
-      activeIndex = -1;
-      debounceTimer = setTimeout(async () => {
-        const query = input.value.trim();
-        if (!query) {
-          results.innerHTML = '';
-          return;
-        }
-
-        const pf = await getPagefind();
-        const res = await pf.search(query);
-
-        if (!res.results?.length) {
-          results.innerHTML = '<p class="text-[15px] text-[#9CA3AF] dark:text-[#6B7280]">未找到结果</p>';
-          return;
-        }
-
-        const items = await Promise.all(res.results.slice(0, 20).map((r) => r.data()));
-
-        results.innerHTML = items
-          .map(
-            (item) => `
-              <a href="${item.url}" class="block rounded-lg border border-[#E5E7EB] bg-white p-4 mb-3 no-underline transition-colors duration-200 hover:bg-[#F9FAF7] dark:border-[#374151] dark:bg-[#1F2937] dark:hover:bg-[#1A221E]"
-                <div class="text-[15px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6]">${item.meta?.title || item.url}</div>
-                ${item.excerpt ? `<div class="mt-1 text-[13px] text-[#6B7280] dark:text-[#9CA3AF]">${item.excerpt}</div>` : ''}
-              </a>
-            `,
-          )
-          .join('');
-      }, 150);
-    });
-
-    input?.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'j') {
-        e.preventDefault();
-        activeIndex = Math.min(activeIndex + 1, resultLinks.length - 1);
-        updateActiveItem();
-      } else if (e.key === 'ArrowUp' || e.key === 'k') {
-        e.preventDefault();
-        activeIndex = Math.max(activeIndex - 1, 0);
-        updateActiveItem();
-      } else if (e.key === 'Enter' && activeIndex >= 0) {
-        e.preventDefault();
-        resultLinks[activeIndex]?.click();
-      }
-    });
+  <script>
+    import { setupSearch } from '../scripts/search';
+    setupSearch();
   </script>
 </Layout>

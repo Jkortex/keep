@@ -221,6 +221,115 @@ body {
   border-top: 1px solid var(--prose-border);
 }
 
+/* ── Command Palette Scrollbar ── */
+#palette-results {
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+
+#palette-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+#palette-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#palette-results::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+#palette-results::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+  background-clip: content-box;
+}
+
+.dark #palette-results {
+  scrollbar-color: #4B5563 transparent;
+}
+
+.dark #palette-results::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  background-clip: content-box;
+}
+
+.dark #palette-results::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+  background-clip: content-box;
+}
+
+/* ── TOC sidebar scrollbar (desktop) ── */
+aside.sticky {
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
+aside.sticky::-webkit-scrollbar {
+  width: 4px;
+}
+
+aside.sticky::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside.sticky::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+.dark aside.sticky {
+  scrollbar-color: #374151 transparent;
+}
+
+.dark aside.sticky::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+
+/* ── Mobile TOC drawer scrollbar ── */
+#toc-mobile-overlay nav {
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
+#toc-mobile-overlay nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+#toc-mobile-overlay nav::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 999px;
+}
+
+.dark #toc-mobile-overlay nav {
+  scrollbar-color: #374151 transparent;
+}
+
+.dark #toc-mobile-overlay nav::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+
+/* ── Heading anchor links ── */
+.heading-anchor {
+  text-decoration: none;
+  position: relative;
+}
+
+/* ── Respect reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ── Safe area insets ── */
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* ── Prevent FOUC / Dark mode base ── */
 html.dark body {
   --color-foreground: #F3F4F6;

@@ -4,6 +4,48 @@ import type { PaletteItem } from '../lib/palette';
 let COMMANDS: PaletteItem[] = [];
 let PAGES: PaletteItem[] = [];
 
+// ── Recent articles tracking ──
+const RECENT_KEY = 'palette_recent';
+const MAX_RECENT = 5;
+
+function getRecents(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function addRecent(url: string) {
+  const recents = getRecents().filter((u) => u !== url);
+  recents.unshift(url);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recents.slice(0, MAX_RECENT)));
+}
+
+function getRecentPages(): (PaletteItem & { url: string })[] {
+  const urls = getRecents();
+  const pages = PAGES.filter((p): p is PaletteItem & { url: string; type: 'page' } => p.type === 'page');
+  const pageMap = new Map(pages.map((p) => [p.url, p]));
+  return urls.map((url) => pageMap.get(url)).filter(Boolean) as (PaletteItem & { url: string })[];
+}
+
+// Track page visits from palette navigation
+const origPushState = history.pushState;
+history.pushState = function (...args) {
+  origPushState.apply(this, args);
+  // Track new URL
+  const url = args[2];
+  if (typeof url === 'string' && url.startsWith('/knowledge/')) {
+    addRecent(url);
+  }
+};
+window.addEventListener('popstate', () => {
+  const url = window.location.pathname;
+  if (url.startsWith('/knowledge/')) {
+    addRecent(url);
+  }
+});
+
 const rawData = document.getElementById('palette-pages-data')?.textContent;
 if (rawData) {
   try {
@@ -26,6 +68,20 @@ function tokenize(text: string): string[] {
   return text.toLowerCase().split(/\s+/).filter(Boolean);
 }
 
+/** Extract unique categories from PAGES with article count */
+function getUniqueCategories(): { name: string; slug: string; count: number }[] {
+  const map = new Map<string, { name: string; slug: string; count: number }>();
+  for (const p of PAGES) {
+    if (p.type !== 'page') continue;
+    const key = p.categorySlug;
+    if (!map.has(key)) {
+      map.set(key, { name: p.category, slug: p.categorySlug, count: 0 });
+    }
+    map.get(key)!.count++;
+  }
+  return Array.from(map.values());
+}
+
 export function filterPaletteItems(
   query: string,
   mode: 'all' | 'command' | 'category',
@@ -33,8 +89,36 @@ export function filterPaletteItems(
 ): PaletteItem[] {
   const trimmed = query.trim();
 
-  let pool: PaletteItem[];
-  pool = mode === 'command' ? COMMANDS : [...PAGES, ...(mode === 'all' ? COMMANDS : [])];
+  // ── Empty / plain text: show recent + pages ──
+  if (mode === 'all') {
+    if (!trimmed) {
+      const recent = getRecentPages();
+      const pages = PAGES.filter((p): p is PaletteItem & { url: string; type: 'page' } => p.type === 'page');
+      const remaining = pages.filter((p) => !recent.some((r) => r.url === p.url));
+      return [...recent, ...remaining].slice(0, 30);
+    }
+  }
+
+  // ── Category suggestion mode (@ typed, category not yet committed) ──
+  if (mode === 'category' && categoryFilter === null) {
+    const categories = getUniqueCategories();
+    const searchTerm = normalize(trimmed);
+    const filtered = categories.filter(
+      (c) =>
+        !searchTerm ||
+        normalize(c.name).includes(searchTerm) ||
+        normalize(c.slug).includes(searchTerm),
+    );
+    return filtered
+      .map(
+        (c) =>
+          ({ type: 'category-suggestion', ...c }) as PaletteItem,
+      )
+      .slice(0, 20);
+  }
+
+  // ── Normal item search (pool is pages or commands, never category-suggestion) ──
+  let pool: PaletteItem[] = mode === 'command' ? COMMANDS : PAGES;
 
   if (categoryFilter) {
     const catNorm = normalize(categoryFilter);
@@ -48,23 +132,23 @@ export function filterPaletteItems(
 
   if (!trimmed) {
     return pool.slice(0, 30);
-  } else {
-    const tokens = tokenize(trimmed);
-    let items: PaletteItem[];
-
-    if (mode === 'command') {
-      items = pool.filter((i) => {
-        const haystack = normalize(i.title + (i.type === 'command' ? (i as any).id : ''));
-        return tokens.every((t) => haystack.includes(t));
-      });
-    } else {
-      items = pool.filter((i) => {
-        const haystack = normalize(i.title + i.category);
-        return tokens.every((t) => haystack.includes(t));
-      });
-    }
-    return items.slice(0, 30);
   }
+
+  const tokens = tokenize(trimmed);
+
+  if (mode === 'command') {
+    return pool.filter((i): i is PaletteItem & { title: string; id?: string } => {
+      if (i.type === 'category-suggestion') return false;
+      const haystack = normalize(i.title + (i.type === 'command' ? i.id ?? '' : ''));
+      return tokens.every((t) => haystack.includes(t));
+    }).slice(0, 30);
+  }
+
+  return pool.filter((i): i is PaletteItem & { title: string; category: string } => {
+    if (i.type === 'category-suggestion') return false;
+    const haystack = normalize(i.title + i.category);
+    return tokens.every((t) => haystack.includes(t));
+  }).slice(0, 30);
 }
 
 export function parseQuery(
@@ -77,11 +161,18 @@ export function parseQuery(
   }
 
   if (trimmed.startsWith('@')) {
-    const rest = trimmed.slice(1).trim();
-    const spaceIdx = rest.indexOf(' ');
-    const catQuery = spaceIdx >= 0 ? rest.slice(0, spaceIdx) : rest;
-    const afterCat = spaceIdx >= 0 ? rest.slice(spaceIdx + 1) : '';
-    return { mode: 'category', categoryFilter: catQuery || null, displayQuery: afterCat };
+    // Use original (untrimmed) query to detect trailing space after category name
+    // e.g. '@engineering ' → afterAt = 'engineering ' → space commits the category
+    const afterAt = query.slice(query.indexOf('@') + 1);
+    const spaceIdx = afterAt.indexOf(' ');
+    if (spaceIdx >= 0) {
+      // Category committed (space typed after category name)
+      const catQuery = afterAt.slice(0, spaceIdx).trim();
+      const afterCat = afterAt.slice(spaceIdx + 1).trim();
+      return { mode: 'category', categoryFilter: catQuery || null, displayQuery: afterCat };
+    }
+    // Still selecting category — show suggestions, filter by what's typed
+    return { mode: 'category', categoryFilter: null, displayQuery: trimmed.slice(1).trim() };
   }
 
   return { mode: 'all', categoryFilter: null, displayQuery: trimmed };
@@ -133,6 +224,7 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
   function getModeLabel(mode: string, filter: string | null): string {
     if (mode === 'command') return '命令';
     if (mode === 'category' && filter) return `分类: ${filter}`;
+    if (mode === 'category' && !filter) return '选择分类';
     return '';
   }
 
@@ -143,7 +235,7 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     const label = getModeLabel(parsed.mode, parsed.categoryFilter);
 
     badge.className =
-      'rounded-md px-2 py-0.5 text-[11px] font-medium ' +
+      'rounded-md px-2 py-0.5 text-[12px] font-medium ' +
       (parsed.mode === 'command'
         ? 'inline bg-[#059669]/10 text-[#059669] dark:bg-[#34D399]/10 dark:text-[#34D399]'
         : parsed.mode === 'category'
@@ -162,13 +254,33 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     if (activeIndex < 0) activeIndex = 0;
 
     results.innerHTML = items
-      .map(
-        (item, i) => `
-      <button class="palette-item w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors duration-100 ${
-        i === activeIndex
+      .map((item, i) => {
+        const isActive = i === activeIndex;
+        const activeClass = isActive
           ? 'bg-[#059669]/10 dark:bg-[#34D399]/10'
-          : 'hover:bg-[#F3F4F6] dark:hover:bg-[#374151]'
-      }" data-index="${i}">
+          : 'hover:bg-[#F3F4F6] dark:hover:bg-[#374151]';
+
+        // ── Category suggestion item ──
+        if (item.type === 'category-suggestion') {
+          return `
+      <button class="palette-item w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors duration-100 ${activeClass}" data-index="${i}">
+        <span class="shrink-0 text-[#8B5CF6] dark:text-[#A78BFA]">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2H2v10l9.29 9.29a2 2 0 0 0 2.83 0l6.17-6.17a2 2 0 0 0 0-2.83L12 2Z"></path>
+            <path d="M7 7h.01"></path>
+          </svg>
+        </span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[14px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6] truncate">${item.name}</div>
+          <div class="text-[12px] text-[#9CA3AF] dark:text-[#6B7280]">${item.count} 篇文章</div>
+        </div>
+        <span class="shrink-0 text-[11px] font-mono text-[#9CA3AF] dark:text-[#6B7280]">@${item.slug}</span>
+      </button>`;
+        }
+
+        // ── Page / Command item ──
+        return `
+      <button class="palette-item w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors duration-100 ${activeClass}" data-index="${i}">
         <span class="shrink-0 ${
           item.type === 'page'
             ? 'text-[#9CA3AF] dark:text-[#6B7280]'
@@ -183,21 +295,28 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
           </svg>
         </span>
         <div class="flex-1 min-w-0">
-          <div class="text-[14px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6] truncate">${
-            item.type === 'page' ? item.title : item.title
-          }</div>
+          <div class="text-[14px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6] truncate">${item.title}</div>
           <div class="text-[12px] text-[#9CA3AF] dark:text-[#6B7280] truncate">${
             item.type === 'page'
               ? item.category
               : item.category + (item.keys ? ' · ' + item.keys : '')
           }</div>
         </div>
-      </button>`,
-      )
+      </button>`;
+      })
       .join('');
 
     const el = results.querySelector(`[data-index="${activeIndex}"]`);
     el?.scrollIntoView({ block: 'nearest' });
+  }
+
+  function selectCategory(slug: string) {
+    activeIndex = -1;
+    input.value = `@${slug} `;
+    // Move cursor to end
+    input.setSelectionRange(input.value.length, input.value.length);
+    render();
+    input.focus();
   }
 
   function executeSelected() {
@@ -207,11 +326,18 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     const item = items[activeIndex];
     if (!item) return;
 
+    // ── Category suggestion: insert @slug into input ──
+    if (item.type === 'category-suggestion') {
+      selectCategory(item.slug);
+      return;
+    }
+
     closePalette();
 
     if (item.type === 'page') {
+      addRecent(item.url);
       window.location.href = item.url;
-    } else {
+    } else if (item.type === 'command') {
       runtime.executeCommand(item.id);
     }
   }
@@ -251,6 +377,16 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     }
   });
 
+  // Click on category suggestion items to select
+  results.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.palette-item') as HTMLElement | null;
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.index ?? '-1', 10);
+    if (idx < 0) return;
+    activeIndex = idx;
+    executeSelected();
+  });
+
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closePalette();
   });
@@ -266,4 +402,5 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     input.focus();
     input.setSelectionRange(input.value.length, input.value.length);
   };
+
 }

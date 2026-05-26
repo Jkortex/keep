@@ -84,6 +84,12 @@ export const KEEP_BINDINGS: HotkeyBindingDefinition[] = [
     when: (s) => !s.flags['help.open'],
   },
   {
+    commandId: 'app.search.open',
+    keys: 'ctrl+shift+f',
+    context: { id: 'app/root' },
+    when: (s) => !s.flags['help.open'],
+  },
+  {
     commandId: 'app.help.toggle',
     keys: '?',
     context: { id: 'app/root' },

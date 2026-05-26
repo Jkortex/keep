@@ -1,5 +1,6 @@
 ---
 import ArticleCard from './ArticleCard.astro';
+import Icon from './Icon.astro';
 import * as k from '../lib/knowledge';
 
 const grouped = await k.getArticlesGroupedByCategory();
@@ -16,35 +17,7 @@ const categories = await k.getCategoriesWithCounts();
         return (
           <div class="mb-10">
             <div class="mb-3 flex items-center gap-2">
-              <svg
-                class="h-[18px] w-[18px] text-[#059669] dark:text-[#34D399]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-                <path d="M9 22v-4h6v4" />
-                <>
-                  <path d="M8 6h.01" />
-                  <path d="M16 6h.01" />
-                  <path d="M12 6h.01" />
-                </>
-                <>
-                  <path d="M12 10h.01" />
-                  <path d="M12 14h.01" />
-                </>
-                <>
-                  <path d="M16 10h.01" />
-                  <path d="M16 14h.01" />
-                </>
-                <>
-                  <path d="M8 10h.01" />
-                  <path d="M8 14h.01" />
-                </>
-              </svg>
+              <Icon name="folder" size={18} class="text-[#059669] dark:text-[#34D399]" />
               <a
                 href={'/knowledge/' + slug}
                 class="text-[16px] font-semibold text-[#1A1A1A] no-underline transition-colors duration-200 hover:text-[#059669] dark:text-[#F3F4F6] dark:hover:text-[#34D399]"

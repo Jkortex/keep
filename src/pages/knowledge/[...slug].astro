@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CategoryListing from '../../components/CategoryListing.astro';
+import Icon from '../../components/Icon.astro';
 import { render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import * as k from '../../lib/knowledge';
@@ -66,11 +67,42 @@ let ArticleContent: any;
 let title: string;
 let headings: any[] = [];
 
+// ── Prev / Next / Related articles ──
+let prevArticle: CollectionEntry<'knowledge'> | undefined;
+let nextArticle: CollectionEntry<'knowledge'> | undefined;
+let relatedArticles: CollectionEntry<'knowledge'>[] = [];
+let readingTime = 0;
+
 if (pageType === 'article' && entry) {
   const { Content, headings: entryHeadings } = await render(entry);
   ArticleContent = Content;
   headings = entryHeadings;
   title = entry.data.title;
+
+  // Reading time (~300 chars/min for Chinese)
+  const rawText = entry.body ?? '';
+  readingTime = Math.max(1, Math.ceil(rawText.length / 300));
+
+  // All articles sorted
+  const allArticles = await k.getArticles();
+  const idx = allArticles.findIndex((a: CollectionEntry<'knowledge'>) => a.id === entry.id);
+  if (idx > 0) prevArticle = allArticles[idx - 1];
+  if (idx < allArticles.length - 1) nextArticle = allArticles[idx + 1];
+
+  // Related articles by shared tags
+  const tags = entry.data.tags ?? [];
+  if (tags.length > 0) {
+    relatedArticles = allArticles
+      .filter((a: CollectionEntry<'knowledge'>) => a.id !== entry.id)
+      .map((a: CollectionEntry<'knowledge'>) => ({
+        article: a,
+        score: (a.data.tags ?? []).filter((t) => tags.includes(t)).length,
+      }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((x) => x.article);
+  }
 } else if (pageType === 'category' && category) {
   title = k.getCategoryLabel(category);
 } else {
@@ -102,70 +134,93 @@ if (pageType === 'article' && entry) {
               </h1>
               <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 dark:text-slate-500">
                 <span class="flex items-center gap-1.5">
-                  <svg
-                    class="h-3.5 w-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <>
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </>
-                  </svg>
+                  <Icon name="calendar" size={14} />
                   发布于{' '}
-                  {entry.data.created ? entry.data.created.toISOString().slice(0, 10) : '未知'}
+                  <span data-pagefind-meta="date">{entry.data.created ? entry.data.created.toISOString().slice(0, 10) : '未知'}</span>
+                  {!entry.data.created && '未知'}
                 </span>
                 {entry.data.updated &&
                   entry.data.created &&
                   entry.data.updated.toISOString().slice(0, 10) !==
                     entry.data.created.toISOString().slice(0, 10) && (
                     <span class="flex items-center gap-1.5">
-                      <svg
-                        class="h-3.5 w-3.5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                      </svg>
+                      <Icon name="clock" size={14} />
                       更新于 {entry.data.updated.toISOString().slice(0, 10)}
                     </span>
                   )}
                 <span class="flex items-center gap-1.5">
-                  <svg
-                    class="h-3.5 w-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <>
-                      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2-2.5z" />
-                      <path d="M6 6h15M6 10h10" />
-                    </>
-                  </svg>
-                  {entry.data.category}
+                  <Icon name="folder" size={14} />
+                  <span data-pagefind-meta="category">{entry.data.category}</span>
                 </span>
+                {readingTime > 0 && (
+                  <span class="flex items-center gap-1.5">
+                    <Icon name="clock" size={14} />
+                    {readingTime} 分钟阅读
+                  </span>
+                )}
               </div>
             </header>
             <div class="prose max-w-none">
               <ArticleContent />
             </div>
+
+            <!-- Related articles -->
+            {relatedArticles.length > 0 && (
+              <div class="not-prose mt-12">
+                <h2 class="text-[13px] font-semibold uppercase tracking-wider text-[#9CA3AF] dark:text-[#6B7280]">相关文章</h2>
+                <div class="mt-3 space-y-1">
+                  {relatedArticles.map((r) => (
+                    <a
+                      href={`/knowledge/${r.id}`}
+                      class="group flex items-center gap-3 rounded-lg px-3 py-2 -mx-3 text-[14px] font-medium text-[#1A1A1A] no-underline transition-colors duration-200 hover:bg-[#F0F9F6] dark:text-[#E5E7EB] dark:hover:bg-[#1F2937]"
+                    >
+                      <Icon name="file" size={14} class="shrink-0 text-[#D1D5DB] group-hover:text-[#059669] dark:text-[#4B5563] dark:group-hover:text-[#34D399]" />
+                      <span class="truncate">{r.data.title}</span>
+                      <span class="ml-auto shrink-0 text-[12px] text-[#9CA3AF] dark:text-[#6B7280]">{r.data.category}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <!-- Prev / Next navigation -->
+            {(prevArticle || nextArticle) && (
+              <nav class="not-prose mt-8 flex items-stretch gap-4 border-t border-slate-200 pt-6 dark:border-slate-800">
+                {prevArticle ? (
+                  <a
+                    href={`/knowledge/${prevArticle.id}`}
+                    class="group flex flex-1 items-center gap-3 rounded-xl border border-[#E5E7EB] p-4 no-underline transition-colors duration-200 hover:border-[#059669] hover:bg-[#F9FAF7] dark:border-[#374151] dark:hover:border-[#34D399] dark:hover:bg-[#1A221E]"
+                  >
+                    <svg class="h-4 w-4 shrink-0 text-[#9CA3AF] transition-colors group-hover:text-[#059669] dark:group-hover:text-[#34D399]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    <div class="min-w-0 flex-1 text-right">
+                      <div class="text-[11px] font-medium uppercase tracking-wider text-[#9CA3AF] dark:text-[#6B7280]">上一篇</div>
+                      <div class="mt-0.5 truncate text-[14px] font-medium text-[#1A1A1A] group-hover:text-[#059669] dark:text-[#F3F4F6] dark:group-hover:text-[#34D399]">{prevArticle.data.title}</div>
+                    </div>
+                  </a>
+                ) : (
+                  <div class="flex-1"></div>
+                )}
+                {nextArticle ? (
+                  <a
+                    href={`/knowledge/${nextArticle.id}`}
+                    class="group flex flex-1 items-center gap-3 rounded-xl border border-[#E5E7EB] p-4 no-underline transition-colors duration-200 hover:border-[#059669] hover:bg-[#F9FAF7] dark:border-[#374151] dark:hover:border-[#34D399] dark:hover:bg-[#1A221E]"
+                  >
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[11px] font-medium uppercase tracking-wider text-[#9CA3AF] dark:text-[#6B7280]">下一篇</div>
+                      <div class="mt-0.5 truncate text-[14px] font-medium text-[#1A1A1A] group-hover:text-[#059669] dark:text-[#F3F4F6] dark:group-hover:text-[#34D399]">{nextArticle.data.title}</div>
+                    </div>
+                    <svg class="h-4 w-4 shrink-0 text-[#9CA3AF] transition-colors group-hover:text-[#059669] dark:group-hover:text-[#34D399]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </a>
+                ) : (
+                  <div class="flex-1"></div>
+                )}
+              </nav>
+            )}
           </div>
 
           {headings && headings.length > 0 && (
-            <aside class="hidden lg:block w-56 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-slate-200 dark:border-slate-800 not-prose">
+            <!-- Desktop TOC sidebar -->
+            <aside class="hidden lg:block w-56 sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto pl-4 border-l border-slate-200 dark:border-slate-800 not-prose">
               <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
                 目录
               </h2>
@@ -179,13 +234,62 @@ if (pageType === 'article' && entry) {
                         'block text-xs text-slate-500 hover:text-[#059669] dark:text-slate-400 dark:hover:text-[#34D399] transition-colors leading-relaxed no-underline',
                         h.depth === 3 ? 'pl-3' : 'font-medium',
                       ]}
-                      data-toc-link={h.slug}
+                      data-toc-link-desktop={h.slug}
                     >
                       {h.text}
                     </a>
                   ))}
               </nav>
             </aside>
+
+            <!-- Mobile TOC trigger button -->
+            <button
+              id="toc-mobile-trigger"
+              class="lg:hidden fixed right-4 bottom-20 z-40 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#6B7280] shadow-lg transition-colors duration-200 hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]"
+              style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
+              aria-label="打开目录"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+
+            <!-- Mobile TOC drawer -->
+            <div
+              id="toc-mobile-overlay"
+              class="lg:hidden fixed inset-0 z-[150] hidden items-end justify-center bg-black/30 backdrop-blur-sm"
+            >
+              <div class="w-full max-w-lg rounded-t-2xl border border-[#E5E7EB] bg-[#FAFAF8] p-5 shadow-2xl dark:border-[#374151] dark:bg-[#1F2937]">
+                <div class="mb-4 flex items-center justify-between">
+                  <h2 class="text-[16px] font-semibold text-[#1A1A1A] dark:text-[#F3F4F6]">目录</h2>
+                  <button
+                    id="toc-mobile-close"
+                    class="inline-flex min-h-[44px] min-w-[44px] sm:h-7 sm:w-7 items-center justify-center rounded-lg text-[#9CA3AF] transition-colors duration-200 hover:bg-[#F3F4F6] hover:text-[#1A1A1A] dark:hover:bg-[#374151] dark:hover:text-[#F3F4F6]"
+                    aria-label="关闭目录"
+                  >
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <nav class="space-y-2 max-h-[50vh] overflow-y-auto">
+                  {headings
+                    .filter((h) => h.depth >= 2 && h.depth <= 3)
+                    .map((h) => (
+                      <a
+                        href={`#${h.slug}`}
+                        class:list={[
+                          'block text-sm text-slate-600 hover:text-[#059669] dark:text-slate-300 dark:hover:text-[#34D399] transition-colors leading-relaxed no-underline rounded-lg px-3 py-1.5 hover:bg-[#F3F4F6] dark:hover:bg-[#374151]',
+                          h.depth === 3 ? 'pl-6' : 'font-medium',
+                        ]}
+                        data-toc-link-mobile={h.slug}
+                      >
+                        {h.text}
+                      </a>
+                    ))}
+                </nav>
+              </div>
+            </div>
           )}
         </div>
       )
@@ -194,13 +298,26 @@ if (pageType === 'article' && entry) {
 </Layout>
 
 <script>
-  // ── TOC active state tracker ──
-  const links = document.querySelectorAll('[data-toc-link]');
+  // ── TOC active state tracker (desktop + mobile) ──
+  const desktopLinks = document.querySelectorAll('[data-toc-link-desktop]');
+  const mobileLinks = document.querySelectorAll('[data-toc-link-mobile]');
   const headings = Array.from(document.querySelectorAll('article h2, article h3')).filter(
     (h) => h.id,
   );
 
-  if (links.length > 0 && headings.length > 0) {
+  function updateTocActive(activeId: string) {
+    [...desktopLinks, ...mobileLinks].forEach((link) => {
+      const el = link as HTMLElement;
+      const isActive = (el.dataset.tocLinkDesktop || el.dataset.tocLinkMobile) === activeId;
+      el.classList.toggle('text-[#059669]', isActive);
+      el.classList.toggle('dark:text-[#34D399]', isActive);
+      el.classList.toggle('font-semibold', isActive);
+      el.classList.toggle('text-slate-500', !isActive);
+      el.classList.toggle('dark:text-slate-400', !isActive);
+    });
+  }
+
+  if ((desktopLinks.length > 0 || mobileLinks.length > 0) && headings.length > 0) {
     const observerOptions = {
       root: null,
       rootMargin: '0px 0px -60% 0px',
@@ -208,7 +325,6 @@ if (pageType === 'article' && entry) {
     };
 
     const observer = new IntersectionObserver((entries) => {
-      // Find the first heading that is intersecting in the upper half of the viewport
       let activeId = '';
       for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -217,7 +333,6 @@ if (pageType === 'article' && entry) {
         }
       }
 
-      // Fallback: if no headings are currently intersecting, find the closest one above the viewport
       if (!activeId) {
         const top = window.scrollY;
         for (let i = headings.length - 1; i >= 0; i--) {
@@ -230,18 +345,70 @@ if (pageType === 'article' && entry) {
       }
 
       if (activeId) {
-        links.forEach((link) => {
-          const linkHtml = link as HTMLElement;
-          const isActive = linkHtml.dataset.tocLink === activeId;
-          linkHtml.classList.toggle('text-[#059669]', isActive);
-          linkHtml.classList.toggle('dark:text-[#34D399]', isActive);
-          linkHtml.classList.toggle('font-semibold', isActive);
-          linkHtml.classList.toggle('text-slate-500', !isActive);
-          linkHtml.classList.toggle('dark:text-slate-400', !isActive);
-        });
+        updateTocActive(activeId);
       }
     }, observerOptions);
 
     headings.forEach((h) => observer.observe(h));
+  }
+
+  // ── Mobile TOC drawer ──
+  const tocTrigger = document.getElementById('toc-mobile-trigger');
+  const tocOverlay = document.getElementById('toc-mobile-overlay');
+  const tocClose = document.getElementById('toc-mobile-close');
+
+  function openTocDrawer() {
+    if (!tocOverlay) return;
+    tocOverlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTocDrawer() {
+    if (!tocOverlay) return;
+    tocOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  tocTrigger?.addEventListener('click', openTocDrawer);
+  tocClose?.addEventListener('click', closeTocDrawer);
+  tocOverlay?.addEventListener('click', (e) => {
+    if (e.target === tocOverlay) closeTocDrawer();
+  });
+
+  // Close drawer when a TOC link is clicked
+  tocOverlay?.querySelectorAll('[data-toc-link-mobile]').forEach((link) => {
+    link.addEventListener('click', () => {
+      closeTocDrawer();
+    });
+  });
+
+  // ── Copy heading link on hover ──
+  const article = document.querySelector('article.prose');
+  if (article) {
+    article.querySelectorAll('h2, h3').forEach((h) => {
+      if (!h.id) return;
+      const anchor = document.createElement('a');
+      anchor.href = `#${h.id}`;
+      anchor.className =
+        'heading-anchor ml-1 no-underline opacity-0 transition-opacity duration-150 text-[#9CA3AF] hover:text-[#059669] dark:hover:text-[#34D399]';
+      anchor.setAttribute('aria-label', '复制标题链接');
+      anchor.innerHTML = '<svg class="inline-block h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+      h.classList.add('group');
+      h.appendChild(anchor);
+
+      h.addEventListener('mouseenter', () => { anchor.style.opacity = '1'; });
+      h.addEventListener('mouseleave', () => { anchor.style.opacity = '0'; });
+
+      anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = window.location.href.split('#')[0] + '#' + h.id;
+        navigator.clipboard.writeText(url).catch(() => {});
+        anchor.style.opacity = '1';
+        anchor.innerHTML = '<svg class="inline-block h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+          anchor.innerHTML = '<svg class="inline-block h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+        }, 1500);
+      });
+    });
   }
 </script>
