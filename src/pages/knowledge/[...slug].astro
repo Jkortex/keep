@@ -188,6 +188,7 @@ if (pageType === 'article' && entry) {
               <nav class="not-prose mt-8 flex items-stretch gap-4 border-t border-border pt-6 dark:border-border">
                 {prevArticle ? (
                   <a
+                    id="nav-prev"
                     href={`/knowledge/${prevArticle.id}`}
                     class="group flex flex-1 items-center gap-3 rounded-xl border border-border p-4 no-underline transition-colors duration-200 hover:border-accent hover:bg-[#F9FAF7] dark:hover:border-brand-400 dark:hover:bg-[#1A221E]"
                   >
@@ -202,6 +203,7 @@ if (pageType === 'article' && entry) {
                 )}
                 {nextArticle ? (
                   <a
+                    id="nav-next"
                     href={`/knowledge/${nextArticle.id}`}
                     class="group flex flex-1 items-center gap-3 rounded-xl border border-border p-4 no-underline transition-colors duration-200 hover:border-accent hover:bg-[#F9FAF7] dark:hover:border-brand-400 dark:hover:bg-[#1A221E]"
                   >
@@ -220,7 +222,7 @@ if (pageType === 'article' && entry) {
 
           {headings && headings.length > 0 && (
             <!-- Desktop TOC sidebar -->
-            <aside class="hidden lg:block w-56 sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto pl-4 border-l border-border dark:border-border not-prose">
+            <aside class="scrollbar-thinner hidden lg:block w-56 sticky top-24 max-h-[calc(100dvh-8rem)] overflow-y-auto pl-4 border-l border-border dark:border-border not-prose">
               <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
                 目录
               </h2>
@@ -268,7 +270,7 @@ if (pageType === 'article' && entry) {
                     <Icon name="x" size={16} />
                   </button>
                 </div>
-                <nav class="space-y-2 max-h-[50vh] overflow-y-auto">
+                <nav class="scrollbar-thinner space-y-2 max-h-[50vh] overflow-y-auto">
                   {headings
                     .filter((h) => h.depth >= 2 && h.depth <= 3)
                     .map((h) => (
@@ -286,31 +288,46 @@ if (pageType === 'article' && entry) {
                 </nav>
               </div>
             </div>
-          )}
-        </div>
-      )
-    )
-  }
+      )}
+    </div>
+  )
+)
+
 </Layout>
 
+<style>
+  [tabindex="0"]:focus-visible {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+</style>
+
 <script>
-  // ── TOC active state tracker (desktop + mobile) ──
   const desktopLinks = document.querySelectorAll('[data-toc-link-desktop]');
   const mobileLinks = document.querySelectorAll('[data-toc-link-mobile]');
   const headings = Array.from(document.querySelectorAll('article h2, article h3')).filter(
     (h) => h.id,
   );
 
+  let previousActiveId = '';
+
   function updateTocActive(activeId: string) {
-    [...desktopLinks, ...mobileLinks].forEach((link) => {
-      const el = link as HTMLElement;
-      const isActive = (el.dataset.tocLinkDesktop || el.dataset.tocLinkMobile) === activeId;
-      el.classList.toggle('text-[#059669]', isActive);
-      el.classList.toggle('dark:text-[#34D399]', isActive);
-      el.classList.toggle('font-semibold', isActive);
-      el.classList.toggle('text-slate-500', !isActive);
-      el.classList.toggle('dark:text-slate-400', !isActive);
-    });
+    if (activeId === previousActiveId) return;
+    const prev = previousActiveId;
+    previousActiveId = activeId;
+
+    const allLinks = [...desktopLinks, ...mobileLinks] as HTMLElement[];
+    for (const el of allLinks) {
+      const id = el.dataset.tocLinkDesktop || el.dataset.tocLinkMobile || '';
+      if (id === activeId) {
+        el.classList.add('text-[#059669]', 'dark:text-[#34D399]', 'font-semibold');
+        el.classList.remove('text-slate-500', 'dark:text-slate-400');
+      } else if (id === prev) {
+        el.classList.remove('text-[#059669]', 'dark:text-[#34D399]', 'font-semibold');
+        el.classList.add('text-slate-500', 'dark:text-slate-400');
+      }
+    }
   }
 
   if ((desktopLinks.length > 0 || mobileLinks.length > 0) && headings.length > 0) {
@@ -346,39 +363,34 @@ if (pageType === 'article' && entry) {
     }, observerOptions);
 
     headings.forEach((h) => observer.observe(h));
+    window.addEventListener('beforeunload', () => observer.disconnect());
   }
 
-  // ── Mobile TOC drawer ──
   const tocTrigger = document.getElementById('toc-mobile-trigger');
   const tocOverlay = document.getElementById('toc-mobile-overlay');
   const tocClose = document.getElementById('toc-mobile-close');
 
   function openTocDrawer() {
     if (!tocOverlay) return;
-    tocOverlay.style.display = 'flex';
+    tocOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
 
   function closeTocDrawer() {
     if (!tocOverlay) return;
-    tocOverlay.style.display = 'none';
+    tocOverlay.classList.add('hidden');
     document.body.style.overflow = '';
   }
 
   tocTrigger?.addEventListener('click', openTocDrawer);
   tocClose?.addEventListener('click', closeTocDrawer);
   tocOverlay?.addEventListener('click', (e) => {
-    if (e.target === tocOverlay) closeTocDrawer();
-  });
-
-  // Close drawer when a TOC link is clicked
-  tocOverlay?.querySelectorAll('[data-toc-link-mobile]').forEach((link) => {
-    link.addEventListener('click', () => {
+    const target = e.target as HTMLElement;
+    if (target === tocOverlay || target.closest('[data-toc-link-mobile]')) {
       closeTocDrawer();
-    });
+    }
   });
 
-  // ── Copy heading link on hover ──
   const article = document.querySelector('article.prose');
   if (article) {
     article.querySelectorAll('h2, h3').forEach((h) => {
@@ -407,4 +419,47 @@ if (pageType === 'article' && entry) {
       });
     });
   }
+
+  // ── Make scrollable containers Tab-focusable ──
+  document.querySelectorAll<HTMLElement>('pre, div, table').forEach((el) => {
+    if (el.scrollWidth > el.clientWidth && !el.hasAttribute('tabindex')) {
+      el.tabIndex = 0;
+    }
+  });
+
+  // ── Keyboard shortcuts: [ prev / ] next article with horizontal scroll support ──
+  function getScrollableParent(el: EventTarget | null): HTMLElement | null {
+    let node = el as HTMLElement | null;
+    while (node && node !== document.body) {
+      if (node.scrollWidth > node.clientWidth) return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      (e.target as HTMLElement)?.isContentEditable
+    ) return;
+
+    if (e.key === '[' || e.key === ']') {
+      const scrollEl = getScrollableParent(e.target);
+      if (scrollEl) {
+        e.preventDefault();
+        const dir = e.key === '[' ? -1 : 1;
+        scrollEl.scrollBy({ left: dir * 80, behavior: 'smooth' });
+        return;
+      }
+    }
+
+    if (e.key === '[') {
+      const prev = document.getElementById('nav-prev') as HTMLAnchorElement | null;
+      prev?.click();
+    } else if (e.key === ']') {
+      const next = document.getElementById('nav-next') as HTMLAnchorElement | null;
+      next?.click();
+    }
+  });
 </script>

@@ -1,7 +1,7 @@
 import type {
   HotkeyBindingDefinition,
   HotkeyCommandDefinition,
-} from './types';
+} from '../../../hotkeys/src/core/types';
 
 export const KEEP_COMMANDS: HotkeyCommandDefinition[] = [
   {

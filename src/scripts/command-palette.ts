@@ -1,5 +1,5 @@
-import type { HotkeyRuntime } from '../lib/hotkeys/types';
-import type { PaletteItem } from '../lib/palette';
+import type { HotkeyRuntime } from '../../hotkeys/src/core/types';
+import type { PaletteItem, PaletteSymbolItem, FilterMode } from '../lib/palette';
 
 let COMMANDS: PaletteItem[] = [];
 let PAGES: PaletteItem[] = [];
@@ -46,6 +46,48 @@ window.addEventListener('popstate', () => {
   }
 });
 
+let SYMBOLS: PaletteSymbolItem[] = [];
+
+function generateCodeBlockId(index: number): string {
+  return `palette-code-${index}`;
+}
+
+function scanPageSymbols(): PaletteSymbolItem[] {
+  const symbols: PaletteSymbolItem[] = [];
+
+  document.querySelectorAll('h2[id], h3[id]').forEach((h) => {
+    const text = h.textContent?.trim();
+    if (!text) return;
+    symbols.push({
+      type: 'symbol',
+      id: h.id,
+      title: text,
+      kind: h.tagName === 'H2' ? 'heading-2' : 'heading-3',
+    });
+  });
+
+  let codeIndex = 0;
+  document.querySelectorAll('pre').forEach((pre) => {
+    const code = pre.querySelector('code');
+    if (!code) return;
+    const classMatch = code.className.match(/language-(\w+)/);
+    const language = classMatch?.[1] || 'text';
+    if (!pre.id) pre.id = generateCodeBlockId(codeIndex);
+    const firstLine = (code.textContent || '').split('\n').find((l) => l.trim())?.trim() || '';
+    const preview = firstLine.length > 60 ? firstLine.slice(0, 57) + '...' : firstLine;
+    symbols.push({
+      type: 'symbol',
+      id: pre.id,
+      title: preview || `[${language}]`,
+      kind: 'code',
+      language,
+    });
+    codeIndex++;
+  });
+
+  return symbols;
+}
+
 const rawData = document.getElementById('palette-pages-data')?.textContent;
 if (rawData) {
   try {
@@ -60,18 +102,18 @@ if (rawData) {
   } catch {}
 }
 
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text.toLowerCase().replace(/\s+/g, '');
 }
 
-function tokenize(text: string): string[] {
+export function tokenize(text: string): string[] {
   return text.toLowerCase().split(/\s+/).filter(Boolean);
 }
 
-/** Extract unique categories from PAGES with article count */
-function getUniqueCategories(): { name: string; slug: string; count: number }[] {
+/** Extract unique categories from pages with article count */
+export function getUniqueCategories(pages: PaletteItem[] = PAGES): { name: string; slug: string; count: number }[] {
   const map = new Map<string, { name: string; slug: string; count: number }>();
-  for (const p of PAGES) {
+  for (const p of pages) {
     if (p.type !== 'page') continue;
     const key = p.categorySlug;
     if (!map.has(key)) {
@@ -84,8 +126,11 @@ function getUniqueCategories(): { name: string; slug: string; count: number }[] 
 
 export function filterPaletteItems(
   query: string,
-  mode: 'all' | 'command' | 'category',
+  mode: FilterMode,
   categoryFilter: string | null,
+  pages: PaletteItem[] = PAGES,
+  commands: PaletteItem[] = COMMANDS,
+  symbols: PaletteSymbolItem[] = SYMBOLS,
 ): PaletteItem[] {
   const trimmed = query.trim();
 
@@ -93,8 +138,8 @@ export function filterPaletteItems(
   if (mode === 'all') {
     if (!trimmed) {
       const recent = getRecentPages();
-      const pages = PAGES.filter((p): p is PaletteItem & { url: string; type: 'page' } => p.type === 'page');
-      const remaining = pages.filter((p) => !recent.some((r) => r.url === p.url));
+      const pageItems = pages.filter((p): p is PaletteItem & { url: string; type: 'page' } => p.type === 'page');
+      const remaining = pageItems.filter((p) => !recent.some((r) => r.url === p.url));
       return [...recent, ...remaining].slice(0, 30);
     }
   }
@@ -117,8 +162,18 @@ export function filterPaletteItems(
       .slice(0, 20);
   }
 
+  // ── Symbol mode: search within current page ──
+  if (mode === 'symbol') {
+    if (!trimmed) return symbols.slice(0, 30);
+    const tokens = tokenize(trimmed);
+    return symbols.filter((s) => {
+      const haystack = normalize(s.title + (s.language || '') + s.kind);
+      return tokens.every((t) => haystack.includes(t));
+    }).slice(0, 30);
+  }
+
   // ── Normal item search (pool is pages or commands, never category-suggestion) ──
-  let pool: PaletteItem[] = mode === 'command' ? COMMANDS : PAGES;
+  let pool: PaletteItem[] = mode === 'command' ? commands : pages;
 
   if (categoryFilter) {
     const catNorm = normalize(categoryFilter);
@@ -145,7 +200,7 @@ export function filterPaletteItems(
   }
 
   return pool.filter((i): i is PaletteItem & { title: string; category: string } => {
-    if (i.type === 'category-suggestion') return false;
+    if (i.type === 'category-suggestion' || i.type === 'symbol') return false;
     const haystack = normalize(i.title + i.category);
     return tokens.every((t) => haystack.includes(t));
   }).slice(0, 30);
@@ -153,11 +208,15 @@ export function filterPaletteItems(
 
 export function parseQuery(
   query: string,
-): { mode: 'all' | 'command' | 'category'; categoryFilter: string | null; displayQuery: string } {
+): { mode: FilterMode; categoryFilter: string | null; displayQuery: string } {
   const trimmed = query.trim();
 
   if (trimmed.startsWith('>')) {
     return { mode: 'command', categoryFilter: null, displayQuery: trimmed.slice(1).trim() };
+  }
+
+  if (trimmed.startsWith('#')) {
+    return { mode: 'symbol', categoryFilter: null, displayQuery: trimmed.slice(1).trim() };
   }
 
   if (trimmed.startsWith('@')) {
@@ -178,7 +237,7 @@ export function parseQuery(
   return { mode: 'all', categoryFilter: null, displayQuery: trimmed };
 }
 
-function formatKeysForDisplay(keys: string): string {
+export function formatKeysForDisplay(keys: string): string {
   return keys
     .split(/\s+/)
     .map((stroke) =>
@@ -201,7 +260,8 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
   const input = document.getElementById('palette-input') as HTMLInputElement;
   const results = document.getElementById('palette-results') as HTMLElement;
   const badge = document.getElementById('palette-mode-badge') as HTMLElement;
-  if (!overlay || !input || !results || !badge) return;
+  const shortcuts = document.getElementById('palette-shortcuts') as HTMLElement;
+  if (!overlay || !input || !results || !badge || !shortcuts) return;
 
   // Initialize COMMANDS dynamically from hotkey runtime
   const hotkeyCommands = runtime.getCommands();
@@ -223,6 +283,7 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
 
   function getModeLabel(mode: string, filter: string | null): string {
     if (mode === 'command') return '命令';
+    if (mode === 'symbol') return '页内符号';
     if (mode === 'category' && filter) return `分类: ${filter}`;
     if (mode === 'category' && !filter) return '选择分类';
     return '';
@@ -231,16 +292,23 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
   function render() {
     const raw = input.value;
     const parsed = parseQuery(raw);
+    if (parsed.mode === 'symbol') {
+      SYMBOLS = scanPageSymbols();
+    }
     const items = filterPaletteItems(parsed.displayQuery, parsed.mode, parsed.categoryFilter);
     const label = getModeLabel(parsed.mode, parsed.categoryFilter);
+
+    shortcuts.style.display = raw.trim() === '' ? 'flex' : 'none';
 
     badge.className =
       'rounded-md px-2 py-0.5 text-xs font-medium ' +
       (parsed.mode === 'command'
         ? 'inline bg-accent/10 text-accent dark:bg-brand-400/10 dark:text-brand-400'
-        : parsed.mode === 'category'
-          ? 'inline bg-[#2563EB]/10 text-[#2563EB] dark:bg-[#60A5FA]/10 dark:text-[#60A5FA]'
-          : 'hidden');
+        : parsed.mode === 'symbol'
+          ? 'inline bg-[#8B5CF6]/10 text-[#8B5CF6] dark:bg-[#A78BFA]/10 dark:text-[#A78BFA]'
+          : parsed.mode === 'category'
+            ? 'inline bg-[#2563EB]/10 text-[#2563EB] dark:bg-[#60A5FA]/10 dark:text-[#60A5FA]'
+            : 'hidden');
     badge.textContent = label || '';
     badge.style.display = label ? '' : 'none';
 
@@ -275,6 +343,34 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
           <div class="text-xs text-dim dark:text-subtle">${item.count} 篇文章</div>
         </div>
         <span class="shrink-0 text-[11px] font-mono text-dim dark:text-subtle">@${item.slug}</span>
+      </button>`;
+        }
+
+        // ── Symbol item ──
+        if (item.type === 'symbol') {
+          const isHeading = item.kind.startsWith('heading');
+          const symbolLabel = isHeading
+            ? item.kind === 'heading-2' ? 'H2' : 'H3'
+            : (item.language || 'code');
+          return `
+      <button class="palette-item w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors duration-100 ${activeClass}" data-index="${i}">
+        <span class="shrink-0 ${
+          isHeading
+            ? 'text-[#059669] dark:text-[#34D399]'
+            : 'text-[#8B5CF6] dark:text-[#A78BFA]'
+        }">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            ${
+              isHeading
+                ? '<path d="M6 4v16M18 4v16M4 12h16"></path>'
+                : '<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>'
+            }
+          </svg>
+        </span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-foreground truncate">${item.title}</div>
+          <div class="text-xs text-dim dark:text-subtle truncate">${symbolLabel}</div>
+        </div>
       </button>`;
         }
 
@@ -332,6 +428,20 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
       return;
     }
 
+    // ── Symbol: scroll to element ──
+    if (item.type === 'symbol') {
+      closePalette();
+      const el = document.getElementById(item.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-accent/50', 'dark:ring-brand-400/50', 'rounded', 'transition-all', 'duration-300');
+        setTimeout(() => {
+          el.classList.remove('ring-2', 'ring-accent/50', 'dark:ring-brand-400/50', 'rounded', 'transition-all', 'duration-300');
+        }, 2000);
+      }
+      return;
+    }
+
     closePalette();
 
     if (item.type === 'page') {
@@ -350,13 +460,30 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     input.blur();
   }
 
-  // Event handlers
+  let renderTimer: ReturnType<typeof setTimeout>;
   input.addEventListener('input', () => {
     activeIndex = -1;
-    render();
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(render, 80);
   });
 
+  function isPaletteToggleShortcut(e: KeyboardEvent): boolean {
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (!ctrl) return false;
+    if (e.key === 'p') return true;
+    if (e.key === 'P') return true;
+    if (e.key === 'e') return true;
+    return false;
+  }
+
   input.addEventListener('keydown', (e) => {
+    // Toggle palette closed via same shortcuts that opened it
+    if (isPaletteToggleShortcut(e)) {
+      e.preventDefault();
+      closePalette();
+      return;
+    }
+
     const items = results?.querySelectorAll('.palette-item') ?? [];
     const len = items.length;
 
@@ -387,20 +514,50 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     executeSelected();
   });
 
+  // Click on mode shortcut buttons
+  shortcuts.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.palette-mode-btn') as HTMLElement | null;
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+    if (!mode) return;
+    const prefix = mode === 'command' ? '> ' : mode === 'category' ? '@ ' : '# ';
+    activeIndex = -1;
+    input.value = prefix;
+    render();
+    input.focus();
+    input.setSelectionRange(prefix.length, prefix.length);
+  });
+
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closePalette();
   });
 
-  (window as any).__openPalette = function (prefill: string) {
+  function openPalette(prefill: string) {
     activeIndex = -1;
     input.value = prefill || '';
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     runtime.setMode('command');
     runtime.setFlag('palette.open', true);
+    SYMBOLS = [];
     render();
     input.focus();
     input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  function isPaletteOpen(): boolean {
+    return overlay.style.display !== 'none';
+  }
+
+  (window as any).togglePalette = function (prefill: string) {
+    if (isPaletteOpen()) {
+      closePalette();
+    } else {
+      openPalette(prefill);
+    }
   };
+
+  // Backward compat alias
+  (window as any).__openPalette = (window as any).togglePalette;
 
 }

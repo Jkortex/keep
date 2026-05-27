@@ -1,5 +1,3 @@
-import type { MarkdownHeading } from 'astro';
-
 /** 页面元数据 */
 export interface PageMeta {
   title: string;
@@ -22,5 +20,4 @@ export interface CodeDemoProps {
   files?: SourceFile[];
 }
 
-/** TOC 目录项 */
-export type TocItem = MarkdownHeading;
+

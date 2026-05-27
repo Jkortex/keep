@@ -14,6 +14,9 @@
     "format:check": "prettier --check .",
     "check": "astro check",
     "typecheck": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "astro": "astro"
   },
   "dependencies": {
@@ -30,8 +33,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "happy-dom": "^20.9.0",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
   }
 }

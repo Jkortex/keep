@@ -75,12 +75,6 @@ export async function getArticles(): Promise<Article[]> {
   return sortByOrder(articles);
 }
 
-/** 获取最新文章列表，按时间降序排列 */
-export async function getLatestArticles(): Promise<Article[]> {
-  const articles = await getCollection('knowledge');
-  return sortByCreated(articles);
-}
-
 /** 获取指定分类的文章，按 order 升序排列 */
 export async function getArticlesByCategory(categorySlug: string): Promise<Article[]> {
   const articles = await getCollection('knowledge', (entry) => getCategorySlug(entry) === categorySlug);

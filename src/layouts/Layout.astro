@@ -37,7 +37,7 @@ const palettePages = allArticles.map((a) => ({
     <script is:inline>
       (function () {
         const t = localStorage.getItem('theme');
-        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme:dark)').matches)) {
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
       })();
@@ -123,9 +123,8 @@ const palettePages = allArticles.map((a) => ({
 
     <script>
       import { setupLayout } from '../scripts/layout';
+      import '../scripts/hotkeys-init.ts';
       setupLayout();
     </script>
-
-    <script src="../scripts/hotkeys-init.ts"></script>
   </body>
 </html>

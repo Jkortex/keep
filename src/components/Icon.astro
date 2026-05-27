@@ -13,12 +13,8 @@ import {
   Calendar,
   Clock,
   Folder,
-  Hash,
   X,
   Menu,
-  ArrowUp,
-  Copy,
-  List,
   Plus,
   ChartColumnStacked,
 } from '@lucide/astro';
@@ -41,10 +37,7 @@ export interface Props {
     | 'chart-column-stacked'
     | 'x'
     | 'menu'
-    | 'arrow-up'
-    | 'copy'
-    | 'list'
-  | 'plus';
+    | 'plus';
   class?: string;
   size?: number;
 }
@@ -65,13 +58,9 @@ const iconMap: Record<string, any> = {
   calendar: Calendar,
   clock: Clock,
   folder: Folder,
-  hashtag: Hash,
   'chart-column-stacked': ChartColumnStacked,
   x: X,
   menu: Menu,
-  'arrow-up': ArrowUp,
-  copy: Copy,
-  list: List,
   plus: Plus,
 };
 

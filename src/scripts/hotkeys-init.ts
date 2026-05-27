@@ -1,6 +1,6 @@
-import { createHotkeyRuntime } from '../lib/hotkeys/runtime';
+import { createHotkeyRuntime } from '../../hotkeys/src/core/runtime';
 import { KEEP_COMMANDS, KEEP_BINDINGS } from '../lib/hotkeys/commands';
-import type { HotkeyRuntime } from '../lib/hotkeys/types';
+import type { HotkeyRuntime } from '../../hotkeys/src/core/types';
 import { setupCommandPalette } from './command-palette';
 import * as theme from '../lib/theme';
 
@@ -39,7 +39,7 @@ runtime.registerHandlers([
   {
     commandId: 'app.palette.open',
     run: () => {
-      if ((window as any).__openPalette) (window as any).__openPalette('');
+      if ((window as any).togglePalette) (window as any).togglePalette('');
     },
   },
   {

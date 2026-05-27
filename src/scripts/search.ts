@@ -5,9 +5,8 @@ let pagefindInstance: Pagefind | null = null;
 async function getPagefind(): Promise<Pagefind> {
   if (pagefindInstance) return pagefindInstance;
   try {
-    // Runtime dynamic import — resolved by Pagefind at runtime, not by Vite
-    const imp = new Function('p', 'return import(p)');
-    const mod: Pagefind = await imp('/pagefind/pagefind.js');
+    const pagefindUrl = '/pagefind/pagefind.js';
+    const mod: Pagefind = await import(pagefindUrl);
     pagefindInstance = mod;
   } catch {
     pagefindInstance = { search: async () => ({ results: [], total: 0 }) } as unknown as Pagefind;
@@ -29,8 +28,6 @@ export function setupSearch() {
   let resultLinks: HTMLAnchorElement[] = [];
 
   function updateActiveItem() {
-    const items = $results.querySelectorAll<HTMLAnchorElement>('a');
-    resultLinks = [...items];
     resultLinks.forEach((el, i) => {
       if (i === activeIndex) {
         el.classList.add('ring-2', 'ring-[#059669]', 'dark:ring-[#34D399]');
@@ -101,6 +98,7 @@ export function setupSearch() {
       )
       .join('');
 
+    resultLinks = [...$results.querySelectorAll<HTMLAnchorElement>('a')];
     activeIndex = -1;
   }
 
@@ -135,8 +133,6 @@ export function setupSearch() {
   }
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+export function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }

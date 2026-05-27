@@ -67,6 +67,34 @@
 }
 
 /* ── Base ── */
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+html::-webkit-scrollbar { width: 6px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+  background-clip: content-box;
+}
+html.dark {
+  scrollbar-color: #4B5563 transparent;
+}
+html.dark::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  background-clip: content-box;
+}
+html.dark::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+  background-clip: content-box;
+}
 body {
   font-family: var(--font-sans);
   color: var(--color-foreground);
@@ -223,95 +251,43 @@ body {
   border-top: 1px solid var(--prose-border);
 }
 
-/* ── Command Palette Scrollbar ── */
-#palette-results {
+/* ── Thin scrollbar utility ── */
+.scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #D1D5DB transparent;
 }
-
-#palette-results::-webkit-scrollbar {
-  width: 6px;
-}
-
-#palette-results::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#palette-results::-webkit-scrollbar-thumb {
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
   background: #D1D5DB;
   border-radius: 999px;
   border: 1px solid transparent;
   background-clip: content-box;
 }
-
-#palette-results::-webkit-scrollbar-thumb:hover {
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #9CA3AF;
   background-clip: content-box;
 }
-
-.dark #palette-results {
+.dark .scrollbar-thin {
   scrollbar-color: #4B5563 transparent;
 }
-
-.dark #palette-results::-webkit-scrollbar-thumb {
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #4B5563;
   background-clip: content-box;
 }
-
-.dark #palette-results::-webkit-scrollbar-thumb:hover {
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #6B7280;
   background-clip: content-box;
 }
 
-/* ── TOC sidebar scrollbar (desktop) ── */
-aside.sticky {
+/* ── Extra-thin scrollbar for sidebars ── */
+.scrollbar-thinner {
   scrollbar-width: thin;
-  scrollbar-color: #E5E7EB transparent;
 }
-
-aside.sticky::-webkit-scrollbar {
-  width: 4px;
-}
-
-aside.sticky::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-aside.sticky::-webkit-scrollbar-thumb {
-  background: #E5E7EB;
-  border-radius: 999px;
-}
-
-.dark aside.sticky {
-  scrollbar-color: #374151 transparent;
-}
-
-.dark aside.sticky::-webkit-scrollbar-thumb {
-  background: #374151;
-}
-
-/* ── Mobile TOC drawer scrollbar ── */
-#toc-mobile-overlay nav {
-  scrollbar-width: thin;
-  scrollbar-color: #E5E7EB transparent;
-}
-
-#toc-mobile-overlay nav::-webkit-scrollbar {
-  width: 4px;
-}
-
-#toc-mobile-overlay nav::-webkit-scrollbar-thumb {
-  background: #E5E7EB;
-  border-radius: 999px;
-}
-
-.dark #toc-mobile-overlay nav {
-  scrollbar-color: #374151 transparent;
-}
-
-.dark #toc-mobile-overlay nav::-webkit-scrollbar-thumb {
-  background: #374151;
-}
+.scrollbar-thinner::-webkit-scrollbar { width: 4px; }
+.scrollbar-thinner::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thinner::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 999px; }
+.dark .scrollbar-thinner { scrollbar-color: #374151 transparent; }
+.dark .scrollbar-thinner::-webkit-scrollbar-thumb { background: #374151; }
 
 /* ── Heading anchor links ── */
 .heading-anchor {
