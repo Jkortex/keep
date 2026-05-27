@@ -1,4 +1,4 @@
-import rss from '@astrojs/rss';
+import rss, { getRssString } from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 
 export async function GET(context) {
@@ -9,7 +9,7 @@ export async function GET(context) {
     return db - da;
   });
 
-  return rss({
+  const body = await getRssString({
     title: 'Keep — 个人知识库',
     description: '软件工程原则、定律与实践的个人知识库',
     site: context.site,
@@ -21,5 +21,9 @@ export async function GET(context) {
       description: article.data.description,
       categories: [article.data.category],
     })),
+  });
+
+  return new Response(body, {
+    headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },
   });
 }
