@@ -1,6 +1,5 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
-import { getCategorySlug } from '../lib/knowledge';
 
 export async function GET(context) {
   const articles = await getCollection('knowledge');
@@ -14,6 +13,7 @@ export async function GET(context) {
     title: 'Keep — 个人知识库',
     description: '软件工程原则、定律与实践的个人知识库',
     site: context.site,
+    customData: '<language>zh-CN</language>',
     items: articles.map((article) => ({
       title: article.data.title,
       link: `/knowledge/${article.id}/`,
