@@ -16,18 +16,18 @@ const grouped = await k.getArticlesGroupedByCategory();
       return (
         <div class="mb-12">
           <div class="mb-4 flex items-center gap-2">
-            <Icon name="folder" size={18} class="text-[#059669] dark:text-[#34D399]" />
+            <Icon name="chart-column-stacked" size={18} class="text-accent dark:text-brand-400" />
             <a
               href={'/knowledge/' + slug}
-              class="text-[16px] font-semibold text-[#1A1A1A] no-underline transition-colors duration-200 hover:text-[#059669] dark:text-[#F3F4F6] dark:hover:text-[#34D399]"
+              class="text-base font-semibold text-foreground no-underline transition-colors duration-200 hover:text-accent dark:hover:text-brand-400"
             >
               {title}
             </a>
-            <span class="text-[13px] text-[#9CA3AF] dark:text-[#6B7280]">({count} 篇)</span>
+            <span class="text-[13px] text-dim">({count} 篇)</span>
             {count > 2 && (
               <a
                 href={'/knowledge/' + slug}
-                class="ml-auto inline-flex items-center gap-0.5 text-[13px] font-medium text-[#059669] no-underline transition-colors duration-200 hover:text-[#047857] dark:text-[#34D399] dark:hover:text-[#6EE7B7]"
+                class="ml-auto inline-flex items-center gap-0.5 text-[13px] font-medium text-accent no-underline transition-colors duration-200 hover:text-accent-hover dark:text-brand-400 dark:hover:text-brand-300"
               >
                 查看全部
                 <Icon name="chevron-right" size={14} />
@@ -42,7 +42,7 @@ const grouped = await k.getArticlesGroupedByCategory();
     })}
   </div>
 
-  {categories.length === 0 && <p class="text-[15px] text-[#9CA3AF] dark:text-[#6B7280]">暂无内容</p>}
+  {categories.length === 0 && <p class="text-[15px] text-dim">暂无内容</p>}
 </section>
 
 <script>

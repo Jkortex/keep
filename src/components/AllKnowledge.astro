@@ -8,7 +8,7 @@ const categories = await k.getCategoriesWithCounts();
 ---
 
 <section class="not-prose">
-  <h1 class="text-[28px] font-semibold tracking-tight text-[#1A1A1A] dark:text-[#F3F4F6]">所有知识</h1>
+  <h1 class="text-[28px] font-semibold tracking-tight text-foreground">所有知识</h1>
 
   <div class="mt-10">
     {
@@ -17,14 +17,14 @@ const categories = await k.getCategoriesWithCounts();
         return (
           <div class="mb-10">
             <div class="mb-3 flex items-center gap-2">
-              <Icon name="folder" size={18} class="text-[#059669] dark:text-[#34D399]" />
+              <Icon name="chart-column-stacked" size={18} class="text-accent dark:text-brand-400" />
               <a
                 href={'/knowledge/' + slug}
-                class="text-[16px] font-semibold text-[#1A1A1A] no-underline transition-colors duration-200 hover:text-[#059669] dark:text-[#F3F4F6] dark:hover:text-[#34D399]"
+                class="text-base font-semibold text-foreground no-underline transition-colors duration-200 hover:text-accent dark:hover:text-brand-400"
               >
                 {title}
               </a>
-              <span class="text-[13px] text-[#9CA3AF] dark:text-[#6B7280]">({count} 篇)</span>
+              <span class="text-[13px] text-dim">({count} 篇)</span>
             </div>
             <div class="space-y-0.5">
               {items.map((article) => (
@@ -37,5 +37,5 @@ const categories = await k.getCategoriesWithCounts();
     }
   </div>
 
-  {categories.length === 0 && <p class="text-[15px] text-[#9CA3AF] dark:text-[#6B7280]">暂无内容</p>}
+  {categories.length === 0 && <p class="text-[15px] text-dim">暂无内容</p>}
 </section>

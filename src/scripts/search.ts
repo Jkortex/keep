@@ -47,12 +47,12 @@ export function setupSearch() {
   }
 
   function renderNoResults(query: string) {
-    $results.innerHTML = `<p class="text-[15px] text-[#9CA3AF] dark:text-[#6B7280]">未找到 "<strong>${escapeHtml(query)}</strong>" 相关结果</p>`;
+    $results.innerHTML = `<p class="text-[15px] text-dim dark:text-subtle">未找到 "<strong>${escapeHtml(query)}</strong>" 相关结果</p>`;
     if ($countEl) $countEl.textContent = '';
   }
 
   function renderLoading() {
-    $results.innerHTML = `<div class="flex items-center justify-center py-12"><div class="h-5 w-5 animate-spin rounded-full border-2 border-[#E5E7EB] border-t-[#059669] dark:border-[#374151] dark:border-t-[#34D399]"></div><span class="ml-3 text-[14px] text-[#9CA3AF] dark:text-[#6B7280]">搜索中…</span></div>`;
+    $results.innerHTML = `<div class="flex items-center justify-center py-12"><div class="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent dark:border-border dark:border-t-brand-400"></div><span class="ml-3 text-sm text-dim dark:text-subtle">搜索中…</span></div>`;
   }
 
   async function doSearch(query: string) {
@@ -90,13 +90,13 @@ export function setupSearch() {
     $results.innerHTML = items
       .map(
         (item: any) => `
-      <a href="${item.url}" class="search-result block rounded-lg border border-[#E5E7EB] bg-white p-4 mb-3 no-underline transition-colors duration-200 hover:bg-[#F9FAF7] dark:border-[#374151] dark:bg-[#1F2937] dark:hover:bg-[#1A221E]">
-        <div class="text-[15px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6]">${item.meta?.title || item.url}</div>
-        <div class="mt-1.5 flex flex-wrap items-center gap-2 text-[12px]">
-          ${item.meta?.category ? `<span class="rounded-md bg-[#ECFDF5] px-1.5 py-0.5 font-medium text-[#059669] dark:bg-[rgba(5,150,105,0.1)] dark:text-[#34D399]">${escapeHtml(item.meta.category)}</span>` : ''}
-          ${item.meta?.date ? `<span class="text-[#9CA3AF] dark:text-[#6B7280]">${escapeHtml(item.meta.date)}</span>` : ''}
+      <a href="${item.url}" class="search-result block rounded-lg border border-border bg-white p-4 mb-3 no-underline transition-colors duration-200 hover:bg-[#F9FAF7] dark:border-border dark:bg-muted dark:hover:bg-[#1A221E]">
+        <div class="text-[15px] font-medium text-foreground dark:text-foreground">${item.meta?.title || item.url}</div>
+        <div class="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+          ${item.meta?.category ? `<span class="rounded-md bg-accent-light px-1.5 py-0.5 font-medium text-accent dark:bg-accent/10 dark:text-brand-400">${escapeHtml(item.meta.category)}</span>` : ''}
+          ${item.meta?.date ? `<span class="text-dim dark:text-subtle">${escapeHtml(item.meta.date)}</span>` : ''}
         </div>
-        ${item.excerpt ? `<div class="mt-1.5 text-[13px] leading-relaxed text-[#6B7280] dark:text-[#9CA3AF]">${item.excerpt}</div>` : ''}
+        ${item.excerpt ? `<div class="mt-1.5 text-[13px] leading-relaxed text-subtle dark:text-dim">${item.excerpt}</div>` : ''}
       </a>`,
       )
       .join('');

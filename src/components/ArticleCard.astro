@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import type { CollectionEntry } from 'astro:content';
 import * as k from '../lib/knowledge';
 
@@ -21,27 +22,27 @@ const href = '/knowledge/' + entry.id;
       href={href}
       data-category={k.getCategorySlug(entry)}
       data-tags={tags?.join(',')}
-      class="group block border-b border-[#F3F4F6] py-5 no-underline transition-colors duration-200 last:border-b-0 hover:bg-[#F9FAF7] dark:border-[#1F2937] dark:hover:bg-[#1A221E]"
+      class="group block border-b border-muted py-5 no-underline transition-colors duration-200 last:border-b-0 hover:bg-[#F9FAF7] dark:border-muted dark:hover:bg-[#1A221E]"
     >
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 mb-1.5">
             {category && (
-              <span class="text-[12px] font-medium text-[#059669] dark:text-[#34D399]">
+              <span class="text-xs font-medium text-accent dark:text-brand-400">
                 {category}
               </span>
             )}
             {date && (
-              <span class="text-[12px] text-[#9CA3AF] dark:text-[#6B7280]">
+              <span class="text-xs text-dim">
                 {date}
               </span>
             )}
           </div>
-          <h3 class="text-[15px] font-medium leading-snug text-[#1A1A1A] group-hover:text-[#059669] transition-colors duration-200 dark:text-[#F3F4F6] dark:group-hover:text-[#34D399]">
+          <h3 class="text-[15px] font-medium leading-snug text-foreground group-hover:text-accent transition-colors duration-200 dark:group-hover:text-brand-400">
             {title}
           </h3>
           {description && (
-            <p class="mt-1 text-[14px] leading-relaxed text-[#6B7280] line-clamp-2 dark:text-[#9CA3AF]">
+            <p class="mt-1 text-sm leading-relaxed text-subtle line-clamp-2">
               {description}
             </p>
           )}
@@ -50,7 +51,7 @@ const href = '/knowledge/' + entry.id;
               {tags.slice(0, 4).map((tag) => (
                 <span
                   data-tag-click={tag}
-                  class="inline-block rounded-md bg-[#F3F4F6] px-2 py-0.5 text-[11px] font-medium text-[#6B7280] hover:bg-[#ECFDF5] hover:text-[#059669] transition-colors duration-200 cursor-pointer dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:hover:bg-[rgba(5,150,105,0.15)] dark:hover:text-[#34D399]"
+                  class="inline-block rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-subtle hover:bg-accent-light hover:text-accent transition-colors duration-200 cursor-pointer dark:bg-muted dark:hover:bg-accent/10 dark:hover:text-brand-400"
                 >
                   {tag}
                 </span>
@@ -58,42 +59,24 @@ const href = '/knowledge/' + entry.id;
             </div>
           )}
         </div>
-        <svg
-          class="mt-1 h-4 w-4 shrink-0 text-[#D1D5DB] transition-colors duration-200 group-hover:text-[#059669] dark:text-[#374151] dark:group-hover:text-[#34D399]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
+        <Icon name="chevron-right" size={16} class="mt-1 shrink-0 text-[#D1D5DB] transition-colors duration-200 group-hover:text-accent dark:text-border dark:group-hover:text-brand-400" />
       </div>
     </a>
   ) : (
     <a
       href={href}
-      class="group flex items-start gap-3 rounded-lg px-3 py-3 -mx-3 no-underline text-[#1A1A1A] transition-colors duration-200 hover:bg-[#F0F9F6] dark:text-[#E5E7EB] dark:hover:bg-[#1F2937]"
+      data-category={k.getCategorySlug(entry)}
+      data-tags={tags?.join(',')}
+      class="group flex items-start gap-3 rounded-lg px-3 py-3 -mx-3 no-underline text-foreground transition-colors duration-200 hover:bg-[#F0F9F6] dark:text-[#E5E7EB] dark:hover:bg-muted"
     >
-      <svg
-        class="mt-0.5 h-4 w-4 shrink-0 text-[#D1D5DB] transition-colors duration-200 group-hover:text-[#059669] dark:text-[#4B5563] dark:group-hover:text-[#34D399]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="m9 18 6-6-6-6" />
-      </svg>
+      <Icon name="chevron-right" size={16} class="mt-0.5 shrink-0 text-[#D1D5DB] transition-colors duration-200 group-hover:text-accent dark:text-secondary dark:group-hover:text-brand-400" />
 
       <div class="min-w-0 flex-1">
         <div class="text-[15px] font-medium leading-snug">
           {title}
         </div>
         {description && (
-          <div class="mt-1 text-[13px] leading-relaxed text-[#6B7280] dark:text-[#9CA3AF]">
+          <div class="mt-1 text-[13px] leading-relaxed text-subtle">
             {description}
           </div>
         )}

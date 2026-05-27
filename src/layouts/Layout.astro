@@ -3,6 +3,7 @@ import '../styles/app.css';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import HotkeyHelp from '../components/HotkeyHelp.astro';
 import CommandPalette from '../components/CommandPalette.astro';
+import Icon from '../components/Icon.astro';
 import type { PageMeta } from '../types';
 import { getCollection } from 'astro:content';
 import { getCategorySlug } from '../lib/knowledge';
@@ -46,47 +47,35 @@ const palettePages = allArticles.map((a) => ({
     <!-- Nav -->
     <header
       data-pagefind-ignore
-      class="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FAFAF8]/80 backdrop-blur-md dark:border-[#374151] dark:bg-[#111827]/80"
+      class="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md dark:bg-background/80"
     >
       <nav class:list={['mx-auto flex items-center justify-between px-5 py-3.5', wide ? 'max-w-5xl' : 'max-w-3xl']}>
         <a href="/" class="flex items-center gap-2 no-underline group">
-          <span class="text-[17px] font-semibold tracking-tight text-[#1A1A1A] dark:text-[#F3F4F6] group-hover:text-[#059669] transition-colors duration-200"
+          <span class="text-[17px] font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-200"
             >Keep</span
           >
         </a>
         <div class="flex items-center gap-5">
-          <button id="palette-toggle" class="cursor-pointer text-[15px] font-medium text-[#6B7280] no-underline transition-colors duration-200 hover:text-[#059669] dark:text-[#9CA3AF] dark:hover:text-[#34D399]" aria-label="命令面板" title="命令面板 (Ctrl+P)">
-            <svg class="h-[18px] w-[18px]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
-            </svg>
+          <button id="palette-toggle" class="cursor-pointer text-[15px] font-medium text-subtle no-underline transition-colors duration-200 hover:text-accent" aria-label="命令面板" title="命令面板 (Ctrl+P)">
+            <Icon name="command" size={18} />
           </button>
           <a
             href="/search"
-            class="text-[15px] font-medium text-[#6B7280] no-underline transition-colors duration-200 hover:text-[#059669] dark:text-[#9CA3AF] dark:hover:text-[#34D399]"
+            class="text-[15px] font-medium text-subtle no-underline transition-colors duration-200 hover:text-accent"
             aria-label="搜索"
           >
-            <svg class="h-[18px] w-[18px]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </svg>
+            <Icon name="search" size={18} />
           </a>
-          <button id="theme-toggle" class="cursor-pointer text-[15px] font-medium text-[#6B7280] transition-colors duration-200 hover:text-[#059669] dark:text-[#9CA3AF] dark:hover:text-[#34D399]" aria-label="切换主题" type="button">
-            <svg id="sun-icon" class="hidden h-[18px] w-[18px]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path>
-              <path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path>
-              <path d="M2 12h2"></path><path d="M20 12h2"></path>
-              <path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
-            </svg>
-            <svg id="moon-icon" class="h-[18px] w-[18px]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-            </svg>
+          <button id="theme-toggle" class="cursor-pointer text-[15px] font-medium text-subtle transition-colors duration-200 hover:text-accent" aria-label="切换主题" type="button">
+            <span id="sun-icon" class="hidden"><Icon name="sun" size={18} /></span>
+            <span id="moon-icon"><Icon name="moon" size={18} /></span>
           </button>
         </div>
       </nav>
     </header>
 
     <!-- Page data for command palette -->
-    <script id="palette-pages-data" type="application/json" set:html={JSON.stringify(palettePages)}></script>
+    <script is:inline id="palette-pages-data" type="application/json" set:html={JSON.stringify(palettePages)}></script>
 
     <!-- Main -->
     <main
@@ -101,9 +90,11 @@ const palettePages = allArticles.map((a) => ({
     <!-- Footer -->
     <footer
       data-pagefind-ignore
-      class="border-t border-[#E5E7EB] py-8 text-center text-[13px] text-[#9CA3AF] dark:border-[#374151] dark:text-[#6B7280]"
+      class="border-t border-border py-8 text-center text-[13px] text-dim"
     >
       <span>Keep — 个人知识库</span>
+      <span class="mx-2">·</span>
+      <a href="/rss.xml" class="text-dim no-underline transition-colors duration-200 hover:text-accent">RSS</a>
     </footer>
 
     <HotkeyHelp
@@ -122,14 +113,12 @@ const palettePages = allArticles.map((a) => ({
     <!-- Back to top button -->
     <button
       id="back-to-top"
-      class="fixed right-4 bottom-4 z-40 hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#6B7280] shadow-lg transition-all duration-200 hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:bg-[#1F2937] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]"
+      class="fixed right-4 bottom-4 z-40 hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border bg-white text-subtle shadow-lg transition-all duration-200 hover:border-accent hover:text-accent dark:bg-muted"
       style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
       aria-label="回到顶部"
       title="回到顶部"
     >
-      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="18 15 12 9 6 15"></polyline>
-      </svg>
+      <Icon name="chevron-up" size={16} />
     </button>
 
     <script>

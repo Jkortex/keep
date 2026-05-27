@@ -235,9 +235,9 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     const label = getModeLabel(parsed.mode, parsed.categoryFilter);
 
     badge.className =
-      'rounded-md px-2 py-0.5 text-[12px] font-medium ' +
+      'rounded-md px-2 py-0.5 text-xs font-medium ' +
       (parsed.mode === 'command'
-        ? 'inline bg-[#059669]/10 text-[#059669] dark:bg-[#34D399]/10 dark:text-[#34D399]'
+        ? 'inline bg-accent/10 text-accent dark:bg-brand-400/10 dark:text-brand-400'
         : parsed.mode === 'category'
           ? 'inline bg-[#2563EB]/10 text-[#2563EB] dark:bg-[#60A5FA]/10 dark:text-[#60A5FA]'
           : 'hidden');
@@ -245,7 +245,7 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
     badge.style.display = label ? '' : 'none';
 
     if (items.length === 0) {
-      results.innerHTML = `<div class="px-5 py-8 text-center text-[13px] text-[#9CA3AF] dark:text-[#6B7280]">无结果</div>`;
+      results.innerHTML = `<div class="px-5 py-8 text-center text-[13px] text-dim dark:text-subtle">无结果</div>`;
       activeIndex = -1;
       return;
     }
@@ -257,8 +257,8 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
       .map((item, i) => {
         const isActive = i === activeIndex;
         const activeClass = isActive
-          ? 'bg-[#059669]/10 dark:bg-[#34D399]/10'
-          : 'hover:bg-[#F3F4F6] dark:hover:bg-[#374151]';
+          ? 'bg-accent/10 dark:bg-brand-400/10'
+          : 'hover:bg-muted dark:hover:bg-border';
 
         // ── Category suggestion item ──
         if (item.type === 'category-suggestion') {
@@ -271,10 +271,10 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
           </svg>
         </span>
         <div class="flex-1 min-w-0">
-          <div class="text-[14px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6] truncate">${item.name}</div>
-          <div class="text-[12px] text-[#9CA3AF] dark:text-[#6B7280]">${item.count} 篇文章</div>
+          <div class="text-sm font-medium text-foreground truncate">${item.name}</div>
+          <div class="text-xs text-dim dark:text-subtle">${item.count} 篇文章</div>
         </div>
-        <span class="shrink-0 text-[11px] font-mono text-[#9CA3AF] dark:text-[#6B7280]">@${item.slug}</span>
+        <span class="shrink-0 text-[11px] font-mono text-dim dark:text-subtle">@${item.slug}</span>
       </button>`;
         }
 
@@ -283,8 +283,8 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
       <button class="palette-item w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors duration-100 ${activeClass}" data-index="${i}">
         <span class="shrink-0 ${
           item.type === 'page'
-            ? 'text-[#9CA3AF] dark:text-[#6B7280]'
-            : 'text-[#059669] dark:text-[#34D399]'
+            ? 'text-dim dark:text-subtle'
+            : 'text-accent dark:text-brand-400'
         }">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             ${
@@ -295,8 +295,8 @@ export function setupCommandPalette(runtime: HotkeyRuntime) {
           </svg>
         </span>
         <div class="flex-1 min-w-0">
-          <div class="text-[14px] font-medium text-[#1A1A1A] dark:text-[#F3F4F6] truncate">${item.title}</div>
-          <div class="text-[12px] text-[#9CA3AF] dark:text-[#6B7280] truncate">${
+          <div class="text-sm font-medium text-foreground truncate">${item.title}</div>
+          <div class="text-xs text-dim dark:text-subtle truncate">${
             item.type === 'page'
               ? item.category
               : item.category + (item.keys ? ' · ' + item.keys : '')

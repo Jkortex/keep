@@ -22,11 +22,11 @@ function pageUrl(cat: string, page: number): string {
 <section class="not-prose">
   <div class="mb-6 flex items-center gap-3">
     <div
-      class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#ECFDF5] text-[#059669] dark:bg-[rgba(5,150,105,0.1)] dark:text-[#34D399]"
+      class="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-light text-accent dark:bg-accent/10 dark:text-brand-400"
     >
-      <Icon name="folder" size={20} />
+      <Icon name="chart-column-stacked" size={20} />
     </div>
-    <h1 class="text-[24px] font-semibold tracking-tight text-[#1A1A1A] dark:text-[#F3F4F6]">
+    <h1 class="text-2xl font-semibold tracking-tight text-foreground">
       {title}
     </h1>
   </div>
@@ -35,20 +35,20 @@ function pageUrl(cat: string, page: number): string {
     {articles.map((article) => <ArticleCard entry={article} />)}
   </div>
 
-  {articles.length === 0 && <p class="text-[15px] text-[#9CA3AF] dark:text-[#6B7280]">此分类暂无内容</p>}
+  {articles.length === 0 && <p class="text-[15px] text-dim">此分类暂无内容</p>}
 
   {totalPages > 1 && (
     <nav class="mt-10 flex items-center justify-center gap-1.5 sm:gap-1">
       {currentPage > 1 ? (
         <a
           href={pageUrl(category, currentPage - 1)}
-          class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] transition-colors duration-200 hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]"
+          class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-border text-subtle transition-colors duration-200 hover:border-accent hover:text-accent dark:hover:border-brand-400 dark:hover:text-brand-400"
         >
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <Icon name="chevron-left" size={16} />
         </a>
       ) : (
-        <span class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 cursor-not-allowed items-center justify-center rounded-lg border border-[#E5E7EB] text-[#D1D5DB] dark:border-[#374151] dark:text-[#4B5563]">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <span class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-[#D1D5DB] dark:border-border dark:text-secondary">
+          <Icon name="chevron-left" size={16} />
         </span>
       )}
 
@@ -56,10 +56,10 @@ function pageUrl(cat: string, page: number): string {
         <a
           href={pageUrl(category, p)}
           class:list={[
-            'flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg text-[13px] font-medium transition-colors duration-200 no-underline',
+            'flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg text-xs font-medium transition-colors duration-200 no-underline',
             p === currentPage
-              ? 'bg-[#059669] text-white'
-              : 'border border-[#E5E7EB] text-[#6B7280] hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]',
+              ? 'bg-accent text-white'
+              : 'border border-border text-subtle hover:border-accent hover:text-accent dark:hover:border-brand-400 dark:hover:text-brand-400',
           ]}
           aria-current={p === currentPage ? 'page' : undefined}
         >
@@ -70,13 +70,13 @@ function pageUrl(cat: string, page: number): string {
       {currentPage < totalPages ? (
         <a
           href={pageUrl(category, currentPage + 1)}
-          class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] transition-colors duration-200 hover:border-[#059669] hover:text-[#059669] dark:border-[#374151] dark:text-[#9CA3AF] dark:hover:border-[#34D399] dark:hover:text-[#34D399]"
+          class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-border text-subtle transition-colors duration-200 hover:border-accent hover:text-accent dark:hover:border-brand-400 dark:hover:text-brand-400"
         >
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <Icon name="chevron-right" size={16} />
         </a>
       ) : (
-        <span class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 cursor-not-allowed items-center justify-center rounded-lg border border-[#E5E7EB] text-[#D1D5DB] dark:border-[#374151] dark:text-[#4B5563]">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="flex min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 cursor-not-allowed items-center justify-center rounded-lg border border-border text-[#D1D5DB] dark:border-border dark:text-secondary">
+          <Icon name="chevron-right" size={16} />
         </span>
       )}
     </nav>

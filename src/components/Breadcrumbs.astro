@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import * as k from '../lib/knowledge';
 
 export interface Props {
@@ -22,26 +23,13 @@ function getLabel(seg: string, i: number): string {
 
 <nav
   aria-label="面包屑"
-  class="not-prose mb-6 flex items-center gap-1.5 text-[13px] text-[#9CA3AF] dark:text-[#6B7280]"
+  class="not-prose mb-6 flex items-center gap-1.5 text-[13px] text-dim"
 >
   <a
     href="/"
-    class="no-underline transition-colors duration-200 hover:text-[#059669] dark:hover:text-[#34D399] text-[#9CA3AF] dark:text-[#6B7280]"
+    class="no-underline transition-colors duration-200 hover:text-accent dark:hover:text-brand-400 text-dim"
   >
-    <svg
-      class="h-3.5 w-3.5"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-    </svg>
+    <Icon name="home" size={14} />
   </a>
   {
     segments.map((seg, i) => {
@@ -51,26 +39,13 @@ function getLabel(seg: string, i: number): string {
       const isLast = i === segments.length - 1;
       return (
         <>
-          <svg
-            class="h-3 w-3 shrink-0"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
+          <Icon name="chevron-right" size={12} class="shrink-0" />
           {isLast ? (
-            <span class="font-medium text-[#1A1A1A] dark:text-[#F3F4F6] capitalize">{label}</span>
+            <span class="font-medium text-foreground capitalize">{label}</span>
           ) : (
             <a
               href={href}
-              class="no-underline transition-colors duration-200 hover:text-[#059669] dark:hover:text-[#34D399] text-[#9CA3AF] dark:text-[#6B7280] capitalize"
+              class="no-underline transition-colors duration-200 hover:text-accent dark:hover:text-brand-400 text-dim capitalize"
             >
               {label}
             </a>

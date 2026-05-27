@@ -47,6 +47,8 @@
   --color-muted: #F3F4F6;
   --color-border: #E5E7EB;
   --color-destructive: #EF4444;
+  --color-dim: #9CA3AF;
+  --color-subtle: #6B7280;
 
   --color-brand-50: #ECFDF5;
   --color-brand-100: #D1FAE5;
@@ -330,8 +332,12 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ── Prevent FOUC / Dark mode base ── */
-html.dark body {
+/* ── Dark mode token overrides ── */
+html.dark {
   --color-foreground: #F3F4F6;
-  background: #111827;
+  --color-background: #111827;
+  --color-border: #374151;
+  --color-muted: #1F2937;
+  --color-dim: #6B7280;
+  --color-subtle: #9CA3AF;
 }
